@@ -1,3 +1,4 @@
+import { Button } from '@components/Button';
 import { ResultsGrid } from '@components/ResultsGrid';
 import { TopControls } from '@components/TopControls';
 import { Component } from 'react';
@@ -14,7 +15,7 @@ export class SearchContainer extends Component {
         <ResultsGrid />
 
         {/* Error Button */}
-        <button className="error-button">!</button>
+        <Button className="error-button">!</Button>
       </div>
     );
   }

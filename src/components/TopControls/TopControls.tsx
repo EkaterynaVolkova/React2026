@@ -7,7 +7,7 @@ export class TopControls extends Component {
     return (
       <div className="top-controls">
         <SearchInput />
-        <Button />
+        <Button className="search-button">Search</Button>
       </div>
     );
   }

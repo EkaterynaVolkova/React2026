@@ -1,7 +1,14 @@
 import { Component } from 'react';
+import type { ReactNode } from 'react';
 
-export class Button extends Component {
+interface ButtonProps {
+  children?: ReactNode;
+  className?: string;
+}
+
+export class Button extends Component<ButtonProps> {
   render() {
-    return <button className="search-button">Search</button>;
+    const { className, children } = this.props;
+    return <button className={className}>{children}</button>;
   }
 }

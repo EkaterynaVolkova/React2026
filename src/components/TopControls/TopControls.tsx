@@ -2,13 +2,20 @@ import { Button } from '@components/Button';
 import { Input } from '@components/Input';
 import { Component } from 'react';
 
-export class TopControls extends Component {
+interface TopControlsProps {
+  onSearchInput: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}
+
+export class TopControls extends Component<TopControlsProps> {
   render() {
+    const { onSearchInput } = this.props;
     return (
-      <div className="top-controls">
+      <form className="top-controls">
         <Input className="search-input" type="text" placeholder="Search ..." />
-        <Button className="search-button">Search</Button>
-      </div>
+        <Button className="search-button" onClick={onSearchInput}>
+          Search
+        </Button>
+      </form>
     );
   }
 }

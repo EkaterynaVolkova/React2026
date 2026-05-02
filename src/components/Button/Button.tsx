@@ -4,11 +4,16 @@ import type { ReactNode } from 'react';
 interface ButtonProps {
   children?: ReactNode;
   className?: string;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export class Button extends Component<ButtonProps> {
   render() {
-    const { className, children } = this.props;
-    return <button className={`button ${className}`}>{children}</button>;
+    const { className, children, onClick } = this.props;
+    return (
+      <button className={`button ${className}`} onClick={onClick}>
+        {children}
+      </button>
+    );
   }
 }

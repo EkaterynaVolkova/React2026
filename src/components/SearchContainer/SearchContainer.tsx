@@ -4,6 +4,15 @@ import { TopControls } from '@components/TopControls';
 import { Component } from 'react';
 
 export class SearchContainer extends Component {
+  onSearchInput = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    console.log('Searching!');
+  };
+
+  onError = () => {
+    console.log('Error!');
+  };
+
   render() {
     const mockResults = [
       {
@@ -76,13 +85,15 @@ export class SearchContainer extends Component {
       <div className="container">
         <h1>Rick and Morty</h1>
         {/* Top controls */}
-        <TopControls />
+        <TopControls onSearchInput={this.onSearchInput} />
 
         {/* Results */}
         <ResultsGrid searchResults={mockResults} />
 
         {/* Error Button */}
-        <Button className="error-button">!</Button>
+        <Button className="error-button" onClick={this.onError}>
+          !
+        </Button>
       </div>
     );
   }

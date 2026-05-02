@@ -9,6 +9,6 @@ interface ButtonProps {
 export class Button extends Component<ButtonProps> {
   render() {
     const { className, children } = this.props;
-    return <button className={className}>{children}</button>;
+    return <button className={`button ${className}`}>{children}</button>;
   }
 }

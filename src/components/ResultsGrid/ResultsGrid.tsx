@@ -1,77 +1,35 @@
 import { Component } from 'react';
 
-export class ResultsGrid extends Component {
+interface ResultsGridProps {
+  searchResults?: {
+    id: number;
+    image: string;
+    name: string;
+    species: string;
+    status: string;
+    type: string;
+    gender: string;
+    origin: {
+      name: string;
+      url: string;
+    };
+    location: {
+      name: string;
+      url: string;
+    };
+    episode: string[];
+    url: string;
+    created: string;
+  }[];
+}
+
+export class ResultsGrid extends Component<ResultsGridProps> {
   render() {
-    const mockResults = [
-      {
-        id: 1,
-        name: 'Rick Sanchez',
-        status: 'Alive',
-        species: 'Human',
-        type: '',
-        gender: 'Male',
-        origin: {
-          name: 'Earth (C-137)',
-          url: 'https://rickandmortyapi.com/api/location/1',
-        },
-        location: {
-          name: 'Citadel of Ricks',
-          url: 'https://rickandmortyapi.com/api/location/3',
-        },
-        image: 'https://rickandmortyapi.com/api/character/avatar/1.jpeg',
-        episode: [
-          'https://rickandmortyapi.com/api/episode/1',
-          'https://rickandmortyapi.com/api/episode/2',
-          'https://rickandmortyapi.com/api/episode/3',
-        ],
-        url: 'https://rickandmortyapi.com/api/character/1',
-        created: '2017-11-04T18:48:46.250Z',
-      },
-      {
-        id: 48,
-        name: 'Black Rick',
-        status: 'Dead',
-        species: 'Human',
-        type: '',
-        gender: 'Male',
-        origin: { name: 'unknown', url: '' },
-        location: {
-          name: 'Citadel of Ricks',
-          url: 'https://rickandmortyapi.com/api/location/3',
-        },
-        image: 'https://rickandmortyapi.com/api/character/avatar/48.jpeg',
-        episode: [
-          'https://rickandmortyapi.com/api/episode/22',
-          'https://rickandmortyapi.com/api/episode/28',
-        ],
-        url: 'https://rickandmortyapi.com/api/character/48',
-        created: '2017-11-05T11:15:26.044Z',
-      },
-      {
-        id: 72,
-        name: 'Cool Rick',
-        status: 'Alive',
-        species: 'Human',
-        type: '',
-        gender: 'Male',
-        origin: {
-          name: 'Earth (K-83)',
-          url: 'https://rickandmortyapi.com/api/location/26',
-        },
-        location: {
-          name: 'Citadel of Ricks',
-          url: 'https://rickandmortyapi.com/api/location/3',
-        },
-        image: 'https://rickandmortyapi.com/api/character/avatar/72.jpeg',
-        episode: ['https://rickandmortyapi.com/api/episode/28'],
-        url: 'https://rickandmortyapi.com/api/character/72',
-        created: '2017-11-30T11:41:11.542Z',
-      },
-    ];
+    const { searchResults = [] } = this.props;
 
     return (
       <div className="results-grid">
-        {mockResults.map((item) => {
+        {searchResults.map((item) => {
           const statusClass =
             item.status === 'Alive'
               ? 'status-alive'

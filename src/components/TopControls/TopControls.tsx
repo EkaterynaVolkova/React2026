@@ -1,12 +1,12 @@
 import { Button } from '@components/Button';
-import { SearchInput } from '@components/SearchInput';
+import { Input } from '@components/Input';
 import { Component } from 'react';
 
 export class TopControls extends Component {
   render() {
     return (
       <div className="top-controls">
-        <SearchInput />
+        <Input className="search-input" type="text" placeholder="Search ..." />
         <Button className="search-button">Search</Button>
       </div>
     );

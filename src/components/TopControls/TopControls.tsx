@@ -3,18 +3,23 @@ import { Input } from '@components/Input';
 import { Component } from 'react';
 
 interface TopControlsProps {
-  onSearchInput: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onSearch: (query: string) => void;
 }
 
 export class TopControls extends Component<TopControlsProps> {
+  handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const input = event.currentTarget.querySelector(
+      'input'
+    ) as HTMLInputElement;
+    this.props.onSearch(input.value);
+  };
+
   render() {
-    const { onSearchInput } = this.props;
     return (
-      <form className="top-controls">
+      <form className="top-controls" onSubmit={this.handleSubmit}>
         <Input className="search-input" type="text" placeholder="Search ..." />
-        <Button className="search-button" onClick={onSearchInput}>
-          Search
-        </Button>
+        <Button className="search-button">Search</Button>
       </form>
     );
   }

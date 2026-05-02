@@ -1,31 +1,13 @@
+import type { Character } from '@interfaces/shared/types';
 import { Component } from 'react';
 
-interface ResultsGridProps {
-  searchResults?: {
-    id: number;
-    image: string;
-    name: string;
-    species: string;
-    status: string;
-    type: string;
-    gender: string;
-    origin: {
-      name: string;
-      url: string;
-    };
-    location: {
-      name: string;
-      url: string;
-    };
-    episode: string[];
-    url: string;
-    created: string;
-  }[];
-}
-
-export class ResultsGrid extends Component<ResultsGridProps> {
+export class ResultsGrid extends Component<{ searchResults: Character[] }> {
   render() {
-    const { searchResults = [] } = this.props;
+    const { searchResults } = this.props;
+
+    const hasResults = searchResults.length > 0;
+
+    if (!hasResults) return <div className="results-grid">Empty results</div>;
 
     return (
       <div className="results-grid">

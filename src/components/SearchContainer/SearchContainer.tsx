@@ -31,10 +31,14 @@ export class SearchContainer extends Component<object, SearchState> {
   }
 
   onSearch = async (query: string) => {
-    console.log(`searching ${query.trim()}...`);
-    localStorage.setItem(SEARCH_QUERY_KEY, query.trim() ?? '');
-    this.setState({ searchQuery: query.trim() });
-    this.loadData(query.trim());
+    const newQuery = query.trim();
+    const existingQuery = localStorage.getItem(SEARCH_QUERY_KEY);
+    if (newQuery !== existingQuery) {
+      console.log(`searching ${query.trim()}...`);
+      localStorage.setItem(SEARCH_QUERY_KEY, query.trim() ?? '');
+      this.setState({ searchQuery: query.trim() });
+      this.loadData(query.trim());
+    }
   };
 
   onError = () => {

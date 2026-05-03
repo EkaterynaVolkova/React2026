@@ -4,6 +4,7 @@ import { Component } from 'react';
 
 interface TopControlsProps {
   onSearch: (query: string) => void;
+  initialValue?: string;
 }
 
 export class TopControls extends Component<TopControlsProps> {
@@ -18,7 +19,12 @@ export class TopControls extends Component<TopControlsProps> {
   render() {
     return (
       <form className="top-controls" onSubmit={this.handleSubmit}>
-        <Input className="search-input" type="text" placeholder="Search ..." />
+        <Input
+          className="search-input"
+          type="text"
+          placeholder="Search ..."
+          value={this.props.initialValue}
+        />
         <Button className="search-button">Search</Button>
       </form>
     );

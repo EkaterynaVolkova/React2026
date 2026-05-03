@@ -4,14 +4,25 @@ interface SearchInputProps {
   className?: string;
   type?: string;
   placeholder?: string;
+  value?: string;
 }
 
 export class Input extends Component<SearchInputProps> {
   render() {
-    const { className, type = 'text', placeholder = '' } = this.props;
+    const {
+      className,
+      type = 'text',
+      placeholder = '',
+      value = '',
+    } = this.props;
 
     return (
-      <input className={className} type={type} placeholder={placeholder} />
+      <input
+        className={className}
+        type={type}
+        placeholder={placeholder}
+        defaultValue={value}
+      />
     );
   }
 }

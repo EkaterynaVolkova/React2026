@@ -10,11 +10,13 @@ interface SearchState {
   tasks: Character[];
 }
 
+const SEARCH_QUERY_KEY = 'search_query';
+
 export class SearchContainer extends Component<object, SearchState> {
   constructor(props: object) {
     super(props);
     this.state = {
-      searchQuery: '',
+      searchQuery: localStorage.getItem(SEARCH_QUERY_KEY) ?? '',
       tasks: [],
     };
   }
@@ -30,6 +32,7 @@ export class SearchContainer extends Component<object, SearchState> {
 
   onSearch = async (query: string) => {
     console.log(`searching ${query.trim()}...`);
+    localStorage.setItem(SEARCH_QUERY_KEY, query.trim() ?? '');
     this.setState({ searchQuery: query.trim() });
     this.loadData(query.trim());
   };
@@ -43,7 +46,10 @@ export class SearchContainer extends Component<object, SearchState> {
       <div className="container">
         <h1>Rick and Morty</h1>
         {/* Top controls */}
-        <TopControls onSearch={this.onSearch} />
+        <TopControls
+          onSearch={this.onSearch}
+          initialValue={this.state.searchQuery}
+        />
 
         {/* Results */}
         <ResultsGrid searchResults={this.state.tasks} />

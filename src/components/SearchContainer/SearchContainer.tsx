@@ -8,22 +8,24 @@ import { Component } from 'react';
 interface SearchState {
   searchQuery: string;
   tasks: Character[];
+  isLoading: boolean;
 }
 
 const SEARCH_QUERY_KEY = 'search_query';
 
 export class SearchContainer extends Component<object, SearchState> {
-  constructor(props: object) {
-    super(props);
-    this.state = {
-      searchQuery: localStorage.getItem(SEARCH_QUERY_KEY) ?? '',
-      tasks: [],
-    };
-  }
+  state = {
+    searchQuery: localStorage.getItem(SEARCH_QUERY_KEY) ?? '',
+    tasks: [],
+    isLoading: false,
+  };
 
   loadData = async (query: string = '') => {
-    const tasks = await dataService.getCharacters(query);
-    this.setState({ tasks });
+    this.setState({ isLoading: true });
+    setTimeout(async () => {
+      const tasks = await dataService.getCharacters(query);
+      this.setState({ tasks, isLoading: false });
+    }, 500);
   };
 
   componentDidMount() {
@@ -55,8 +57,11 @@ export class SearchContainer extends Component<object, SearchState> {
           initialValue={this.state.searchQuery}
         />
 
-        {/* Results */}
-        <ResultsGrid searchResults={this.state.tasks} />
+        {this.state.isLoading ? (
+          <div id="spinner" className="spinner"></div>
+        ) : (
+          <ResultsGrid searchResults={this.state.tasks} />
+        )}
 
         {/* Error Button */}
         <Button className="error-button" onClick={this.onError}>

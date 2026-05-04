@@ -1,5 +1,6 @@
 import { dataService } from '@api/data.service';
 import { Button } from '@components/Button';
+import { ErrorMessage } from '@components/ErrorMessage';
 import { ResultsGrid } from '@components/ResultsGrid';
 import { TopControls } from '@components/TopControls';
 import type { Character } from '@interfaces/shared/types';
@@ -10,6 +11,7 @@ interface SearchState {
   tasks: Character[];
   isLoading: boolean;
   shouldCrash: boolean;
+  errorMessage: string;
 }
 
 const SEARCH_QUERY_KEY = 'search_query';
@@ -20,13 +22,25 @@ export class SearchContainer extends Component<object, SearchState> {
     tasks: [],
     isLoading: false,
     shouldCrash: false,
+    errorMessage: '',
   };
 
   loadData = async (query: string = '') => {
     this.setState({ isLoading: true });
     setTimeout(async () => {
-      const tasks = await dataService.getCharacters(query);
-      this.setState({ tasks, isLoading: false });
+      try {
+        const tasks = await dataService.getCharacters(query);
+        this.setState({ tasks, isLoading: false });
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error ? error.message : 'Something went wrong';
+
+        this.setState({
+          tasks: [],
+          errorMessage: message,
+          isLoading: false,
+        });
+      }
     }, 500);
   };
 
@@ -57,12 +71,21 @@ export class SearchContainer extends Component<object, SearchState> {
     return (
       <div className="container">
         <h1>Rick and Morty</h1>
+
         {/* Top controls */}
         <TopControls
           onSearch={this.onSearch}
           initialValue={this.state.searchQuery}
         />
 
+        {/*Error message */}
+        {this.state.errorMessage && (
+          <ErrorMessage className="error-message">
+            {this.state.errorMessage}
+          </ErrorMessage>
+        )}
+
+        {/* Results Grid */}
         {this.state.isLoading ? (
           <div id="spinner" className="spinner"></div>
         ) : (

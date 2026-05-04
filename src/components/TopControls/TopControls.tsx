@@ -1,6 +1,7 @@
 import { Button } from '@components/Button';
 import { Input } from '@components/Input';
 import { Component } from 'react';
+import './TopControls.css';
 
 interface TopControlsProps {
   onSearch: (query: string) => void;

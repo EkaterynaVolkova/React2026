@@ -17,6 +17,8 @@ interface SearchState {
 const SEARCH_QUERY_KEY = 'search_query';
 
 export class SearchContainer extends Component<object, SearchState> {
+  timerId: number | null = null;
+
   state = {
     searchQuery: localStorage.getItem(SEARCH_QUERY_KEY) ?? '',
     tasks: [],
@@ -27,7 +29,7 @@ export class SearchContainer extends Component<object, SearchState> {
 
   loadData = async (query: string = '') => {
     this.setState({ isLoading: true });
-    setTimeout(async () => {
+    this.timerId = setTimeout(async () => {
       try {
         const tasks = await dataService.getCharacters(query);
         this.setState({ tasks, isLoading: false });
@@ -48,14 +50,17 @@ export class SearchContainer extends Component<object, SearchState> {
     this.loadData(this.state.searchQuery);
   }
 
+  componentWillUnmount() {
+    if (this.timerId) clearTimeout(this.timerId);
+  }
+
   onSearch = async (query: string) => {
     const newQuery = query.trim();
-    const existingQuery = localStorage.getItem(SEARCH_QUERY_KEY);
+    const existingQuery = this.state.searchQuery;
     if (newQuery !== existingQuery) {
-      console.log(`searching ${query.trim()}...`);
-      localStorage.setItem(SEARCH_QUERY_KEY, query.trim() ?? '');
-      this.setState({ searchQuery: query.trim() });
-      this.loadData(query.trim());
+      localStorage.setItem(SEARCH_QUERY_KEY, newQuery ?? '');
+      this.setState({ searchQuery: newQuery });
+      this.loadData(newQuery);
     }
   };
 

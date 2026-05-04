@@ -9,6 +9,7 @@ interface SearchState {
   searchQuery: string;
   tasks: Character[];
   isLoading: boolean;
+  shouldCrash: boolean;
 }
 
 const SEARCH_QUERY_KEY = 'search_query';
@@ -18,6 +19,7 @@ export class SearchContainer extends Component<object, SearchState> {
     searchQuery: localStorage.getItem(SEARCH_QUERY_KEY) ?? '',
     tasks: [],
     isLoading: false,
+    shouldCrash: false,
   };
 
   loadData = async (query: string = '') => {
@@ -44,10 +46,14 @@ export class SearchContainer extends Component<object, SearchState> {
   };
 
   onError = () => {
-    console.log('Error!');
+    this.setState({ shouldCrash: true });
   };
 
   render() {
+    if (this.state.shouldCrash) {
+      throw new Error('I crashed!');
+    }
+
     return (
       <div className="container">
         <h1>Rick and Morty</h1>

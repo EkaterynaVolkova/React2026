@@ -25,7 +25,7 @@ export class TopControls extends Component<TopControlsProps> {
           placeholder="Search ..."
           value={this.props.initialValue}
         />
-        <Button className="search-button">Search</Button>
+        <Button className="primary-button">Search</Button>
       </form>
     );
   }

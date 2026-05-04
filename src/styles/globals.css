@@ -25,17 +25,20 @@
   border-color: var(--color-blue-1);
 }
 
-.search-button {
+.button {
   padding: var(--spacing-sm) var(--spacing-md);
-  background-color: var(--color-blue-1);
-  color: var(--color-white);
   border: none;
   border-radius: var(--border-radius);
   font-weight: bold;
   cursor: pointer;
 }
 
-.search-button:hover {
+.primary-button {
+  background-color: var(--color-blue-1);
+  color: var(--color-white);
+}
+
+.primary-button:hover {
   background-color: var(--color-blue-2);
 }
 
@@ -99,10 +102,8 @@
   height: 50px;
   background-color: var(--color-red-1);
   color: var(--color-white);
-  border: none;
   border-radius: var(--border-radius-round);
   font-size: var(--font-size-xl);
-  cursor: pointer;
   box-shadow: var(--box-shadow-red);
 }
 
@@ -126,4 +127,12 @@
   100% {
     transform: rotate(360deg);
   }
+}
+
+.boundary-error-wrap {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
 }

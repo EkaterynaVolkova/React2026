@@ -9,12 +9,11 @@ interface TopControlsProps {
 }
 
 export class TopControls extends Component<TopControlsProps> {
-  handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const input = event.currentTarget.querySelector(
-      'input'
-    ) as HTMLInputElement;
-    this.props.onSearch(input.value);
+    const formData = new FormData(event.currentTarget);
+    const query = formData.get('search-input') as string;
+    this.props.onSearch(query.trim());
   };
 
   render() {
@@ -22,6 +21,7 @@ export class TopControls extends Component<TopControlsProps> {
       <form className="top-controls" onSubmit={this.handleSubmit}>
         <Input
           className="search-input"
+          name="search-input"
           type="text"
           placeholder="Search ..."
           value={this.props.initialValue}

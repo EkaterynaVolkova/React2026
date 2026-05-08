@@ -17,7 +17,7 @@ export class ResultsGridItem extends Component<Props> {
           : 'status-unknown';
 
     return (
-      <div className="card">
+      <div className="card" data-testid="character-card">
         <img src={item.image} alt={item.name} className="card-image" />
         <div className="card-content">
           <h3 className="card-title">{item.name}</h3>

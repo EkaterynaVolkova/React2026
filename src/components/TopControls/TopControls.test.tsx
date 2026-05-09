@@ -12,8 +12,8 @@ describe('TopControls Search Component Tests', () => {
 
     it('Renders search button', () => {
       render(<TopControls onSearch={vi.fn()} />);
-      const input = screen.getByRole('button', { name: 'Search' });
-      expect(input).toBeInTheDocument();
+      const button = screen.getByRole('button', { name: 'Search' });
+      expect(button).toBeInTheDocument();
     });
   });
 

@@ -1,16 +1,18 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { SEARCH_QUERY_KEY, SearchContainer } from './SearchContainer';
 vi.mock('@api/data.service', () => ({
   dataService: {
     getCharacters: vi.fn(),
   },
 }));
+import searchResultsJSON from '../../test-utils/fixtures/searchResults.json';
 import userEvent from '@testing-library/user-event';
 import { dataService } from '@api/data.service';
 
 describe('SearchContainer Component Tests', () => {
   describe('LocalStorage Integration', () => {
     beforeEach(() => {
+      vi.clearAllMocks();
       window.localStorage.clear();
     });
 
@@ -48,6 +50,11 @@ describe('SearchContainer Component Tests', () => {
   });
 
   describe('API Integration Tests', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      window.localStorage.clear();
+    });
+
     afterEach(() => {
       vi.restoreAllMocks();
     });
@@ -63,6 +70,30 @@ describe('SearchContainer Component Tests', () => {
       expect(
         await screen.findByText(new RegExp(errorMsg, 'i'))
       ).toBeInTheDocument();
+    });
+
+    it('Handles successful API responses', async () => {
+      vi.mocked(dataService.getCharacters).mockResolvedValue(searchResultsJSON);
+
+      render(<SearchContainer />);
+
+      const items = await screen.findAllByTestId('character-card');
+      expect(items).toHaveLength(searchResultsJSON.length);
+    });
+
+    it('Calls API with correct parameters', async () => {
+      vi.mocked(dataService.getCharacters).mockResolvedValue([]);
+      const text = 'Rick';
+      window.localStorage.setItem(SEARCH_QUERY_KEY, text);
+
+      render(<SearchContainer />);
+
+      await waitFor(
+        () => {
+          expect(dataService.getCharacters).toHaveBeenCalledWith(text);
+        },
+        { timeout: 2000 }
+      );
     });
   });
 });

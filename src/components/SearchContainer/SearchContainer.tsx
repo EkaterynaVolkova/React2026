@@ -14,7 +14,7 @@ interface SearchState {
   errorMessage: string;
 }
 
-const SEARCH_QUERY_KEY = 'search_query';
+export const SEARCH_QUERY_KEY = 'search_query';
 
 export class SearchContainer extends Component<object, SearchState> {
   timerId: number | null = null;

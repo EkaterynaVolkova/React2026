@@ -95,5 +95,33 @@ describe('SearchContainer Component Tests', () => {
         { timeout: 2000 }
       );
     });
+
+    it('Calls API only once if search text is not changed', async () => {
+      vi.mocked(dataService.getCharacters).mockResolvedValue([]);
+      const text = 'Rick';
+      const user = userEvent.setup();
+
+      render(<SearchContainer />);
+
+      const input = screen.getByPlaceholderText(/Search/i);
+      const button = screen.getByRole('button', { name: 'Search' });
+      await user.type(input, text);
+      await user.click(button);
+      await user.click(button);
+
+      await waitFor(
+        () => {
+          expect(dataService.getCharacters).toHaveBeenCalledOnce();
+        },
+        { timeout: 2000 }
+      );
+    });
+
+    it('Handles unexpected error types', async () => {
+      vi.mocked(dataService.getCharacters).mockRejectedValue(null);
+      render(<SearchContainer />);
+      const errorText = await screen.findByText(/something went wrong/i);
+      expect(errorText).toBeInTheDocument();
+    });
   });
 });

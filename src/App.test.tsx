@@ -1,26 +1,31 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 import userEvent from '@testing-library/user-event';
-import { SearchContainer } from '@components/SearchContainer';
+import { ErrorBoundary } from '@components/ErrorBoundary';
+
+function ThrowError({ shouldThrow }: { shouldThrow: boolean }) {
+  if (shouldThrow) {
+    throw new Error('Component error!');
+  }
+  return <div>Component working fine</div>;
+}
 
 describe('Main App Component Tests', () => {
   describe('ErrorBoundary', () => {
-    it('Displays fallback UI when error occurs', () => {
+    it('Displays fallback UI when error occurs', async () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const renderSpy = vi
-        .spyOn(SearchContainer.prototype, 'render')
-        .mockImplementation(() => {
-          throw new Error('Test Crash');
-        });
 
-      render(<App />);
+      render(
+        <ErrorBoundary>
+          <ThrowError shouldThrow={true} />
+        </ErrorBoundary>
+      );
 
-      const errorText = screen.getByText(/Something went wrong/i);
-      expect(errorText).toBeInTheDocument();
-      const reloadButton = screen.getByRole('button', { name: 'Reload' });
-      expect(reloadButton).toBeInTheDocument();
+      expect(screen.queryByText(/Something went wrong/i)).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Reload' })
+      ).toBeInTheDocument();
 
-      renderSpy.mockRestore();
       spy.mockRestore();
     });
 
@@ -62,11 +67,11 @@ describe('Main App Component Tests', () => {
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
-      vi.spyOn(SearchContainer.prototype, 'render').mockImplementation(() => {
-        throw new Error('Test Crash');
-      });
-
-      render(<App />);
+      render(
+        <ErrorBoundary>
+          <ThrowError shouldThrow={true} />
+        </ErrorBoundary>
+      );
 
       expect(consoleSpy).toHaveBeenCalled();
       consoleSpy.mockRestore();

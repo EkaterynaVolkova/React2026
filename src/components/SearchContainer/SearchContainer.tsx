@@ -4,104 +4,81 @@ import { ErrorMessage } from '@components/ErrorMessage';
 import { ResultsGrid } from '@components/ResultsGrid';
 import { TopControls } from '@components/TopControls';
 import type { Character } from '@interfaces/shared/types';
-import { Component } from 'react';
-
-interface SearchState {
-  searchQuery: string;
-  tasks: Character[];
-  isLoading: boolean;
-  shouldCrash: boolean;
-  errorMessage: string;
-}
+import { useCallback, useEffect, useState } from 'react';
 
 export const SEARCH_QUERY_KEY = 'search_query';
 
-export class SearchContainer extends Component<object, SearchState> {
-  timerId: number | null = null;
+export const SearchContainer = () => {
+  const [searchQuery, setSearchQuery] = useState(
+    localStorage.getItem(SEARCH_QUERY_KEY) ?? ''
+  );
+  const [tasks, setTasks] = useState([] as Character[]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [shouldCrash, setShouldCrash] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  state = {
-    searchQuery: localStorage.getItem(SEARCH_QUERY_KEY) ?? '',
-    tasks: [],
-    isLoading: false,
-    shouldCrash: false,
-    errorMessage: '',
-  };
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
 
-  loadData = async (query: string = '') => {
-    this.setState({ isLoading: true });
-    this.timerId = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       try {
-        const tasks = await dataService.getCharacters(query);
-        this.setState({ tasks, isLoading: false });
+        const tasks = await dataService.getCharacters(searchQuery);
+        setTasks(tasks);
       } catch (error: unknown) {
         const message =
           error instanceof Error ? error.message : 'Something went wrong';
-
-        this.setState({
-          tasks: [],
-          errorMessage: message,
-          isLoading: false,
-        });
+        setErrorMessage(message);
+      } finally {
+        setIsLoading(false);
       }
     }, 500);
-  };
 
-  componentDidMount() {
-    this.loadData(this.state.searchQuery);
-  }
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-  componentWillUnmount() {
-    if (this.timerId) clearTimeout(this.timerId);
-  }
-
-  onSearch = async (query: string) => {
+  const onSearch = async (query: string) => {
     const newQuery = query.trim();
-    const existingQuery = this.state.searchQuery;
-    if (newQuery !== existingQuery) {
-      localStorage.setItem(SEARCH_QUERY_KEY, newQuery ?? '');
-      this.setState({ searchQuery: newQuery });
-      this.loadData(newQuery);
+    if (newQuery !== searchQuery) {
+      localStorage.setItem(SEARCH_QUERY_KEY, newQuery);
+      setSearchQuery(newQuery);
     }
   };
 
-  onError = () => {
-    this.setState({ shouldCrash: true });
+  const onError = () => {
+    setShouldCrash(true);
   };
 
-  render() {
-    if (this.state.shouldCrash) {
-      throw new Error('I crashed!');
-    }
+  useEffect(() => {
+    const runLoad = async () => {
+      return await loadData();
+    };
 
-    return (
-      <div className="container">
-        <h1>Rick and Morty</h1>
+    runLoad();
+  }, [loadData]);
 
-        {/* Top controls */}
-        <TopControls
-          onSearch={this.onSearch}
-          initialValue={this.state.searchQuery}
-        />
-
-        {/*Error message */}
-        {this.state.errorMessage && (
-          <ErrorMessage className="error-message">
-            {this.state.errorMessage}
-          </ErrorMessage>
-        )}
-
-        {/* Results Grid */}
-        {this.state.isLoading ? (
-          <div id="spinner" className="spinner"></div>
-        ) : (
-          <ResultsGrid searchResults={this.state.tasks} />
-        )}
-
-        {/* Error Button */}
-        <Button className="error-button" onClick={this.onError}>
-          !
-        </Button>
-      </div>
-    );
+  if (shouldCrash) {
+    throw new Error('I crashed!');
   }
-}
+
+  return (
+    <div className="container">
+      <h1>Rick and Morty</h1>
+
+      <TopControls onSearch={onSearch} initialValue={searchQuery} />
+
+      {errorMessage && (
+        <ErrorMessage className="error-message">{errorMessage}</ErrorMessage>
+      )}
+
+      {isLoading ? (
+        <div id="spinner" className="spinner"></div>
+      ) : (
+        <ResultsGrid searchResults={tasks} />
+      )}
+
+      <Button className="error-button" onClick={onError}>
+        !
+      </Button>
+    </div>
+  );
+};

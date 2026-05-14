@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import './ErrorMessage.css';
 
 interface ErrorMessageProps {
@@ -6,9 +6,7 @@ interface ErrorMessageProps {
   children?: React.ReactNode;
 }
 
-export class ErrorMessage extends Component<ErrorMessageProps> {
-  render() {
-    const { className, children } = this.props;
-    return <div className={`${className}`}>{children}</div>;
-  }
-}
+export const ErrorMessage = (props: ErrorMessageProps) => {
+  const { className, children } = props;
+  return <div className={`${className}`}>{children}</div>;
+};

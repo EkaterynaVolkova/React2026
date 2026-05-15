@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { SEARCH_QUERY_KEY, SearchContainer } from './SearchContainer';
+import { SearchContainer } from './SearchContainer';
 vi.mock('@api/data.service', () => ({
   dataService: {
     getCharacters: vi.fn(),
@@ -8,6 +8,7 @@ vi.mock('@api/data.service', () => ({
 import searchResultsJSON from '../../test-utils/fixtures/searchResults.json';
 import userEvent from '@testing-library/user-event';
 import { dataService } from '@api/data.service';
+import { SEARCH_QUERY_KEY } from '../../constants/storage';
 
 describe('SearchContainer Component Tests', () => {
   describe('LocalStorage Integration', () => {
@@ -25,7 +26,7 @@ describe('SearchContainer Component Tests', () => {
       vi.mocked(dataService.getCharacters).mockResolvedValue([]);
 
       const text = 'Rick';
-      window.localStorage.setItem(SEARCH_QUERY_KEY, text);
+      window.localStorage.setItem(SEARCH_QUERY_KEY, JSON.stringify(text));
       render(<SearchContainer />);
       const input = screen.getByPlaceholderText(/Search/i);
       expect(input).toHaveValue(text);
@@ -44,7 +45,8 @@ describe('SearchContainer Component Tests', () => {
       await user.type(input, text);
       await user.click(button);
 
-      const savedQuery = window.localStorage.getItem(SEARCH_QUERY_KEY);
+      const savedQueryRaw = window.localStorage.getItem(SEARCH_QUERY_KEY);
+      const savedQuery = savedQueryRaw ? JSON.parse(savedQueryRaw) : null;
       expect(savedQuery).toBe(text.trim());
     });
   });
@@ -84,7 +86,7 @@ describe('SearchContainer Component Tests', () => {
     it('Calls API with correct parameters', async () => {
       vi.mocked(dataService.getCharacters).mockResolvedValue([]);
       const text = 'Rick';
-      window.localStorage.setItem(SEARCH_QUERY_KEY, text);
+      window.localStorage.setItem(SEARCH_QUERY_KEY, JSON.stringify(text));
 
       render(<SearchContainer />);
 
@@ -103,15 +105,23 @@ describe('SearchContainer Component Tests', () => {
 
       render(<SearchContainer />);
 
+      await waitFor(
+        () => {
+          expect(dataService.getCharacters).toHaveBeenCalledTimes(1);
+        },
+        { timeout: 2000 }
+      );
+
       const input = screen.getByPlaceholderText(/Search/i);
       const button = screen.getByRole('button', { name: 'Search' });
       await user.type(input, text);
       await user.click(button);
       await user.click(button);
+      await user.click(button);
 
       await waitFor(
         () => {
-          expect(dataService.getCharacters).toHaveBeenCalledOnce();
+          expect(dataService.getCharacters).toHaveBeenCalledTimes(2);
         },
         { timeout: 2000 }
       );

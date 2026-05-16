@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from 'react';
 import useLocalStorage from '../../hooks/useLocalStorage';
 import { SEARCH_QUERY_KEY } from '../../constants/storage';
 import { APP_TITLE, DEFAULT_ERROR_MSG } from '../../constants/global';
+import { Outlet } from 'react-router';
 
 const TEST_CRASH_APP_ERROR = 'I crashed!';
 
@@ -57,24 +58,29 @@ export const SearchContainer = () => {
   }
 
   return (
-    <div className="container">
-      <h1>{APP_TITLE}</h1>
+    <>
+      <div className="main-column">
+        <h1>{APP_TITLE}</h1>
 
-      <TopControls onSearch={onSearch} initialValue={searchQuery} />
+        <TopControls onSearch={onSearch} initialValue={searchQuery} />
 
-      {errorMessage && (
-        <ErrorMessage className="error-message">{errorMessage}</ErrorMessage>
-      )}
+        {errorMessage && (
+          <ErrorMessage className="error-message">{errorMessage}</ErrorMessage>
+        )}
 
-      {isLoading ? (
-        <div id="spinner" className="spinner"></div>
-      ) : (
-        <ResultsGrid searchResults={tasks} />
-      )}
+        {isLoading ? (
+          <div id="spinner" className="spinner"></div>
+        ) : (
+          <ResultsGrid searchResults={tasks} />
+        )}
 
-      <Button className="error-button" onClick={onError}>
-        !
-      </Button>
-    </div>
+        <Button className="error-button" onClick={onError}>
+          !
+        </Button>
+      </div>
+      <div className="details-column">
+        <Outlet />
+      </div>
+    </>
   );
 };

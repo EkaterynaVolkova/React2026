@@ -1,0 +1,91 @@
+.about__container {
+  max-width: 600px;
+  margin: var(--spacing-lg) auto;
+  padding: 30px;
+  background-color: var(--color-white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-dark);
+  box-sizing: border-box;
+}
+
+.about__container .title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--color-gray-5);
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  border-bottom: var(--border);
+  padding-bottom: var(--spacing-sm);
+}
+
+.about__container .subtitle {
+  font-size: var(--font-size-xl);
+  color: var(--color-gray-5);
+  margin-top: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+.about__container .info {
+  margin-bottom: var(--spacing-lg);
+  background-color: var(--color-gray-1);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--color-blue-1);
+}
+
+.about__container .info p {
+  font-size: 1rem;
+  color: var(--color-gray-4);
+  margin: var(--spacing-sm) 0;
+  line-height: 1.5;
+}
+
+.about__container .info strong {
+  color: var(--color-gray-5);
+  margin-right: var(--spacing-sm);
+  display: inline-block;
+  min-width: 90px;
+}
+
+.about__container .course-info {
+  text-align: center;
+  padding: var(--spacing-md);
+  background-color: var(--color-gray-1);
+  border-radius: var(--border-radius);
+  border: var(--border);
+}
+
+.about__container .desc {
+  font-size: 1rem;
+  color: var(--color-gray-5);
+  margin-top: 0;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 500;
+}
+
+.about__container .button.about-link {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: var(--border-radius);
+  transition: all var(--transition-duration) ease;
+}
+
+.about__container .info .button.about-link {
+  background-color: var(--color-blue-1);
+  color: var(--color-white);
+}
+
+.about__container .info .button.about-link:hover {
+  background-color: var(--color-blue-2);
+}
+
+.about__container .course-info .button.about-link {
+  background-color: var(--color-green);
+  color: var(--color-white);
+}
+
+.about__container .course-info .button.about-link:hover {
+  opacity: 0.9;
+}

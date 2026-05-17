@@ -1,5 +1,5 @@
-import { dataService } from './data.service';
 import searchResultsJSON from '../test-utils/fixtures/searchResults.json';
+import { getCharacters } from './data.service';
 
 describe('DataService Tests', () => {
   beforeEach(() => {
@@ -11,7 +11,7 @@ describe('DataService Tests', () => {
   });
 
   it('Returns characters on successful fetch', async () => {
-    const mockCharacters = [searchResultsJSON[0]];
+    const mockCharacters = [searchResultsJSON.results[0]];
 
     const fetchSpy = vi.fn().mockResolvedValue({
       ok: true,
@@ -20,23 +20,23 @@ describe('DataService Tests', () => {
 
     vi.stubGlobal('fetch', fetchSpy);
 
-    const results = await dataService.getCharacters('Rick');
+    const results = await getCharacters(1, 'Rick');
 
     expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('Rick'));
-    expect(results).toEqual(mockCharacters);
+    expect(results.results).toEqual(mockCharacters);
   });
 
-  it('Returns an empty array when response is not ok', async () => {
+  it('Throws an error when response is not ok', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
         ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
       })
     );
 
-    const results = await dataService.getCharacters('Unknown');
-
-    expect(results).toEqual([]);
+    await expect(getCharacters(1, 'Unknown')).rejects.toThrow();
   });
 
   it('Uses empty string as default name parameter', async () => {
@@ -47,7 +47,7 @@ describe('DataService Tests', () => {
 
     vi.stubGlobal('fetch', fetchSpy);
 
-    await dataService.getCharacters();
+    await getCharacters();
 
     expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('name='));
   });

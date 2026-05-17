@@ -6,7 +6,7 @@ import { ResultsGridItem } from './ResultsGridItem';
 describe('ResultsGridItem Component Tests', () => {
   describe('Rendering Tests', () => {
     it('Displays item name and description correctly', () => {
-      const item = searchResultsJSON[0] as Character;
+      const item = searchResultsJSON.results[0] as Character;
       render(<ResultsGridItem key={item.id} item={item} />);
       const nameElement = screen.getByText(item.name);
       expect(nameElement).toBeInTheDocument();
@@ -15,7 +15,7 @@ describe('ResultsGridItem Component Tests', () => {
     });
 
     it('Displays item image correctly', () => {
-      const item = searchResultsJSON[0] as Character;
+      const item = searchResultsJSON.results[0] as Character;
       render(<ResultsGridItem key={item.id} item={item} />);
       const imageElement = screen.getByRole('img');
       expect(imageElement).toHaveAttribute('src', item.image);
@@ -23,7 +23,10 @@ describe('ResultsGridItem Component Tests', () => {
     });
 
     it('Applies "status-unknown" class for any other status', () => {
-      const item = { ...searchResultsJSON[0], status: 'Unknown' } as Character;
+      const item = {
+        ...searchResultsJSON.results[0],
+        status: 'Unknown',
+      } as Character;
       render(<ResultsGridItem item={item} />);
 
       const statusSpan = screen.getByText(/Unknown/i);

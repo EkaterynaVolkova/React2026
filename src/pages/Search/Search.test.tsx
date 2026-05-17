@@ -1,16 +1,25 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { SearchContainer } from './SearchContainer';
+import { Search } from './Search';
 vi.mock('@api/data.service', () => ({
-  dataService: {
-    getCharacters: vi.fn(),
-  },
+  getCharacters: vi.fn(),
 }));
 import searchResultsJSON from '../../test-utils/fixtures/searchResults.json';
 import userEvent from '@testing-library/user-event';
-import { dataService } from '@api/data.service';
 import { SEARCH_QUERY_KEY } from '../../constants/storage';
+import { getCharacters } from '@api/data.service';
+import { MemoryRouter, Route, Routes } from 'react-router';
 
-describe('SearchContainer Component Tests', () => {
+const emptyResponse = {
+  info: {
+    count: 0,
+    pages: 0,
+    next: null,
+    prev: null,
+  },
+  results: [],
+};
+
+describe('Search Component Tests', () => {
   describe('LocalStorage Integration', () => {
     beforeEach(() => {
       vi.clearAllMocks();
@@ -23,22 +32,36 @@ describe('SearchContainer Component Tests', () => {
     });
 
     it('Retrieves saved search term on component mount', () => {
-      vi.mocked(dataService.getCharacters).mockResolvedValue([]);
+      vi.mocked(getCharacters).mockResolvedValue(emptyResponse);
 
       const text = 'Rick';
       window.localStorage.setItem(SEARCH_QUERY_KEY, JSON.stringify(text));
-      render(<SearchContainer />);
+
+      render(
+        <MemoryRouter initialEntries={['/?page=1']}>
+          <Routes>
+            <Route path="/" element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
       const input = screen.getByPlaceholderText(/Search/i);
       expect(input).toHaveValue(text);
     });
 
     it('Overwrites existing localStorage value when new search is performed', async () => {
-      vi.mocked(dataService.getCharacters).mockResolvedValue([]);
+      vi.mocked(getCharacters).mockResolvedValue(emptyResponse);
 
       const user = userEvent.setup();
       const text = 'Morty';
 
-      render(<SearchContainer />);
+      render(
+        <MemoryRouter initialEntries={['/?page=1']}>
+          <Routes>
+            <Route path="/" element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      );
 
       const input = screen.getByPlaceholderText(/Search/i);
       const button = screen.getByRole('button', { name: 'Search' });
@@ -63,11 +86,15 @@ describe('SearchContainer Component Tests', () => {
 
     it('Handles API error responses', async () => {
       const errorMsg = 'Server is down';
-      vi.mocked(dataService.getCharacters).mockRejectedValue(
-        new Error(errorMsg)
-      );
+      vi.mocked(getCharacters).mockRejectedValue(new Error(errorMsg));
 
-      render(<SearchContainer />);
+      render(
+        <MemoryRouter initialEntries={['/?page=1']}>
+          <Routes>
+            <Route path="/" element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      );
 
       expect(
         await screen.findByText(new RegExp(errorMsg, 'i'))
@@ -75,39 +102,57 @@ describe('SearchContainer Component Tests', () => {
     });
 
     it('Handles successful API responses', async () => {
-      vi.mocked(dataService.getCharacters).mockResolvedValue(searchResultsJSON);
+      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
 
-      render(<SearchContainer />);
+      render(
+        <MemoryRouter initialEntries={['/?page=1']}>
+          <Routes>
+            <Route path="/" element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      );
 
       const items = await screen.findAllByTestId('character-card');
-      expect(items).toHaveLength(searchResultsJSON.length);
+      expect(items).toHaveLength(searchResultsJSON.results.length);
     });
 
     it('Calls API with correct parameters', async () => {
-      vi.mocked(dataService.getCharacters).mockResolvedValue([]);
+      vi.mocked(getCharacters).mockResolvedValue(emptyResponse);
       const text = 'Rick';
       window.localStorage.setItem(SEARCH_QUERY_KEY, JSON.stringify(text));
 
-      render(<SearchContainer />);
+      render(
+        <MemoryRouter initialEntries={['/?page=1']}>
+          <Routes>
+            <Route path="/" element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      );
 
       await waitFor(
         () => {
-          expect(dataService.getCharacters).toHaveBeenCalledWith(text);
+          expect(getCharacters).toHaveBeenCalledWith(1, text);
         },
         { timeout: 2000 }
       );
     });
 
     it('Calls API only once if search text is not changed', async () => {
-      vi.mocked(dataService.getCharacters).mockResolvedValue([]);
+      vi.mocked(getCharacters).mockResolvedValue(emptyResponse);
       const text = 'Rick';
       const user = userEvent.setup();
 
-      render(<SearchContainer />);
+      render(
+        <MemoryRouter initialEntries={['/?page=1']}>
+          <Routes>
+            <Route path="/" element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      );
 
       await waitFor(
         () => {
-          expect(dataService.getCharacters).toHaveBeenCalledTimes(1);
+          expect(getCharacters).toHaveBeenCalledTimes(1);
         },
         { timeout: 2000 }
       );
@@ -121,15 +166,21 @@ describe('SearchContainer Component Tests', () => {
 
       await waitFor(
         () => {
-          expect(dataService.getCharacters).toHaveBeenCalledTimes(2);
+          expect(getCharacters).toHaveBeenCalledTimes(2);
         },
         { timeout: 2000 }
       );
     });
 
     it('Handles unexpected error types', async () => {
-      vi.mocked(dataService.getCharacters).mockRejectedValue(null);
-      render(<SearchContainer />);
+      vi.mocked(getCharacters).mockRejectedValue(null);
+      render(
+        <MemoryRouter initialEntries={['/?page=1']}>
+          <Routes>
+            <Route path="/" element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      );
       const errorText = await screen.findByText(/something went wrong/i);
       expect(errorText).toBeInTheDocument();
     });

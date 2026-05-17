@@ -1,5 +1,5 @@
 import { ErrorBoundary } from '@components/ErrorBoundary';
-import { SearchContainer } from '@components/SearchContainer';
+import { Search } from './pages/Search';
 import { Route, Routes } from 'react-router';
 import { NotFound } from './pages/NotFound';
 import { About } from './pages/About';
@@ -12,7 +12,7 @@ const App = () => {
       <ErrorBoundary>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route path="/" element={<SearchContainer />}>
+            <Route path="/" element={<Search />}>
               <Route path="" element={<CharacterDetails />} />
             </Route>
 

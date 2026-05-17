@@ -6,7 +6,7 @@ import type { Character } from '@interfaces/shared/types';
 describe('ResultsGrid Component Tests', () => {
   describe('Rendering Tests', () => {
     it('Renders correct number of items when data is provided', () => {
-      const searchResults = searchResultsJSON as Character[];
+      const searchResults = searchResultsJSON.results as Character[];
       render(<ResultsGrid searchResults={searchResults} />);
       const items = screen.getAllByTestId('character-card');
       expect(items).toHaveLength(searchResults.length);

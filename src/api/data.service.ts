@@ -1,17 +1,22 @@
-import type { Character } from '@interfaces/shared/types';
+import type { ResponseData } from '@interfaces/shared/types';
+import { BASE_API_URL } from '../constants/api';
 
-class DataService {
-  private baseUrl: string = 'https://rickandmortyapi.com';
+export async function getCharacters(
+  page: number = 1,
+  name: string = ''
+): Promise<ResponseData> {
+  const url = `${BASE_API_URL}/api/character/?page=${page}&name=${name}`;
 
-  public async getCharacters(name: string = ''): Promise<Character[]> {
-    const url = `${this.baseUrl}/api/character/?name=${name}`;
+  try {
     const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
 
-    if (!response.ok) return [];
-
-    const data = await response.json();
-    return data.results;
+    const result = await response.json();
+    return result;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Response error: ${message}`);
   }
 }
-
-export const dataService = new DataService();

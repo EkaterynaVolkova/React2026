@@ -7,13 +7,15 @@ describe('ResultsGrid Component Tests', () => {
   describe('Rendering Tests', () => {
     it('Renders correct number of items when data is provided', () => {
       const searchResults = searchResultsJSON.results as Character[];
-      render(<ResultsGrid searchResults={searchResults} />);
+      render(
+        <ResultsGrid searchResults={searchResults} onCardClick={vi.fn()} />
+      );
       const items = screen.getAllByTestId('character-card');
       expect(items).toHaveLength(searchResults.length);
     });
 
     it('Displays "no results" message when data array is empty', () => {
-      render(<ResultsGrid searchResults={[]} />);
+      render(<ResultsGrid searchResults={[]} onCardClick={vi.fn()} />);
       const noResultsText = screen.getByText('Empty results');
       expect(noResultsText).toBeInTheDocument();
     });

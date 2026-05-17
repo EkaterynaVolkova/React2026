@@ -1,4 +1,4 @@
-import { getCharacters } from '@api/data.service';
+import { getCharacters, getSingleCharacter } from '@api/data.service';
 import { Button } from '@components/Button';
 import { ErrorMessage } from '@components/ErrorMessage';
 import { ResultsGrid } from '@components/ResultsGrid';
@@ -10,19 +10,24 @@ import { SEARCH_QUERY_KEY } from '../../constants/storage';
 import { APP_TITLE, DEFAULT_ERROR_MSG } from '../../constants/global';
 import { Outlet, useSearchParams } from 'react-router';
 import { Pagination } from '@components/Pagination';
+import './Search.css';
 
 const TEST_CRASH_APP_ERROR = 'I crashed!';
 
 export const Search = () => {
   const [tasks, setTasks] = useState([] as Character[]);
   const [infoData, setInfoData] = useState({} as ResponseInfo);
+  const [character, setCharacter] = useState({} as Character);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDetailsLoading, setIsDetailsLoading] = useState(false);
   const [shouldCrash, setShouldCrash] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [errorDetailsMessage, setErrorDetailsMessage] = useState('');
   const [storedQuery, setStoredQuery] = useLocalStorage(SEARCH_QUERY_KEY);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const currentPage = Number(searchParams.get('page')) || 1;
+  const characterId = Number(searchParams.get('id')) || null;
   const searchQuery = searchParams.get('query') || storedQuery || '';
 
   useEffect(() => {
@@ -52,6 +57,28 @@ export const Search = () => {
     }
   }, []);
 
+  const loadSingleCharacter = useCallback(async (id: number | null) => {
+    setIsDetailsLoading(true);
+
+    if (!id) {
+      setCharacter({} as Character);
+      return;
+    }
+
+    try {
+      const data = await getSingleCharacter(id);
+      setCharacter(data);
+      setErrorDetailsMessage('');
+    } catch (error: unknown) {
+      setCharacter({} as Character);
+      const message =
+        error instanceof Error ? error.message : DEFAULT_ERROR_MSG;
+      setErrorDetailsMessage(message);
+    } finally {
+      setIsDetailsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       await loadData(currentPage, searchQuery);
@@ -60,9 +87,16 @@ export const Search = () => {
     fetchData();
   }, [currentPage, loadData, searchQuery]);
 
+  useEffect(() => {
+    const fetchCharacter = async () => {
+      await loadSingleCharacter(characterId);
+    };
+
+    fetchCharacter();
+  }, [characterId, loadSingleCharacter]);
+
   const onSearch = async (query: string) => {
     const newQuery = query.trim();
-    console.log(newQuery);
     if (newQuery !== searchQuery) {
       setStoredQuery(newQuery);
       const nextParams = new URLSearchParams(searchParams);
@@ -81,42 +115,64 @@ export const Search = () => {
     setSearchParams(nextParams);
   };
 
+  const onCardClick = (id: number) => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('id', String(id));
+    setSearchParams(nextParams);
+  };
+
+  const onCardClose = () => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('id');
+    setSearchParams(nextParams);
+  };
+
   if (shouldCrash) {
     throw new Error(TEST_CRASH_APP_ERROR);
   }
 
   return (
     <>
-      <div className="main-column">
-        <h1>{APP_TITLE}</h1>
+      <h1>{APP_TITLE}</h1>
 
-        <TopControls onSearch={onSearch} initialValue={searchQuery} />
+      <TopControls onSearch={onSearch} initialValue={searchQuery} />
 
-        {errorMessage && (
-          <ErrorMessage className="error-message">{errorMessage}</ErrorMessage>
-        )}
+      <div className="content-columns">
+        <div className="main-column">
+          {errorMessage && (
+            <ErrorMessage className="error-message">
+              {errorMessage}
+            </ErrorMessage>
+          )}
 
-        {isLoading ? (
-          <div id="spinner" className="spinner"></div>
-        ) : (
-          <ResultsGrid searchResults={tasks} />
-        )}
+          {isLoading ? (
+            <div className="spinner"></div>
+          ) : (
+            <ResultsGrid searchResults={tasks} onCardClick={onCardClick} />
+          )}
 
-        {isLoading || (
-          <Pagination
-            infoData={infoData}
-            onPageChange={onPageChange}
-            currentPage={currentPage}
-          />
-        )}
+          {isLoading || (
+            <Pagination
+              infoData={infoData}
+              onPageChange={onPageChange}
+              currentPage={currentPage}
+            />
+          )}
+        </div>
 
-        <Button className="error-button" onClick={onError}>
-          !
-        </Button>
+        <Outlet
+          context={{
+            character,
+            isDetailsLoading,
+            onCardClose,
+            errorDetailsMessage,
+          }}
+        />
       </div>
-      <div className="details-column">
-        <Outlet />
-      </div>
+
+      <Button className="error-button" onClick={onError}>
+        !
+      </Button>
     </>
   );
 };

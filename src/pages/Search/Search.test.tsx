@@ -185,4 +185,60 @@ describe('Search Component Tests', () => {
       expect(errorText).toBeInTheDocument();
     });
   });
+
+  it('Handles page change when pagination button is clicked', async () => {
+    vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/?page=1']}>
+        <Routes>
+          <Route path="/" element={<Search />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const page2Button = await screen.findByRole('button', { name: '2' });
+    await user.click(page2Button);
+    expect(getCharacters).toHaveBeenCalledWith(2, '');
+  });
+
+  it('Handles last page change when » button is clicked', async () => {
+    vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/?page=1']}>
+        <Routes>
+          <Route path="/" element={<Search />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const lastPageButton = await screen.findByRole('button', { name: '»' });
+    await user.click(lastPageButton);
+
+    expect(getCharacters).toHaveBeenCalledWith(
+      searchResultsJSON.info.pages,
+      ''
+    );
+  });
+
+  it('Handles previous page change when ‹ button is clicked', async () => {
+    vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/?page=3']}>
+        <Routes>
+          <Route path="/" element={<Search />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const prevPageButton = await screen.findByRole('button', { name: '‹' });
+    await user.click(prevPageButton);
+
+    expect(getCharacters).toHaveBeenCalledWith(2, '');
+  });
 });

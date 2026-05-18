@@ -6,12 +6,13 @@ const API_RATE_LIMIT_ERROR =
 
 export async function getCharacters(
   page: number = 1,
-  name: string = ''
+  name: string = '',
+  signal?: AbortSignal
 ): Promise<ResponseData> {
   const url = `${BASE_API_URL}/api/character/?page=${page}&name=${name}`;
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { signal });
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(errorText || response.statusText);
@@ -31,11 +32,14 @@ export async function getCharacters(
   }
 }
 
-export async function getSingleCharacter(id: number): Promise<Character> {
+export async function getSingleCharacter(
+  id: number,
+  signal?: AbortSignal
+): Promise<Character> {
   const url = `${BASE_API_URL}/api/character/${id}`;
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { signal });
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(errorText || response.statusText);

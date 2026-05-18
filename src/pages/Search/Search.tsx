@@ -39,61 +39,83 @@ export const Search = () => {
     }
   }, [hasPageParam, setSearchParams]);
 
-  const loadData = useCallback(async (page: number, query: string) => {
-    setIsLoading(true);
+  const loadData = useCallback(
+    async (page: number, query: string, signal?: AbortSignal) => {
+      setIsLoading(true);
 
-    try {
-      const tasks = await getCharacters(page, query);
-      setTasks(tasks.results);
-      setInfoData(tasks.info);
-      setErrorMessage('');
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : DEFAULT_ERROR_MSG;
-      setErrorMessage(message);
-      setTasks([]);
-      setInfoData({} as ResponseInfo);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      try {
+        const tasks = await getCharacters(page, query, signal);
+        if (signal?.aborted) return;
 
-  const loadSingleCharacter = useCallback(async (id: number | null) => {
-    setIsDetailsLoading(true);
+        setTasks(tasks.results);
+        setInfoData(tasks.info);
+        setErrorMessage('');
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error ? error.message : DEFAULT_ERROR_MSG;
+        setErrorMessage(message);
+        setTasks([]);
+        setInfoData({} as ResponseInfo);
+      } finally {
+        if (!signal?.aborted) setIsLoading(false);
+      }
+    },
+    []
+  );
 
-    if (!id) {
-      setCharacter({} as Character);
-      return;
-    }
+  const loadSingleCharacter = useCallback(
+    async (id: number | null, signal?: AbortSignal) => {
+      setIsDetailsLoading(true);
 
-    try {
-      const data = await getSingleCharacter(id);
-      setCharacter(data);
-      setErrorDetailsMessage('');
-    } catch (error: unknown) {
-      setCharacter({} as Character);
-      const message =
-        error instanceof Error ? error.message : DEFAULT_ERROR_MSG;
-      setErrorDetailsMessage(message);
-    } finally {
-      setIsDetailsLoading(false);
-    }
-  }, []);
+      if (!id) {
+        setCharacter({} as Character);
+        return;
+      }
+
+      try {
+        const data = await getSingleCharacter(id, signal);
+        if (signal?.aborted) return;
+
+        setCharacter(data);
+        setErrorDetailsMessage('');
+      } catch (error: unknown) {
+        setCharacter({} as Character);
+        const message =
+          error instanceof Error ? error.message : DEFAULT_ERROR_MSG;
+        setErrorDetailsMessage(message);
+      } finally {
+        if (!signal?.aborted) setIsDetailsLoading(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchData = async () => {
-      await loadData(currentPage, searchQuery);
+      await loadData(currentPage, searchQuery, controller.signal);
     };
 
     fetchData();
+
+    return () => {
+      controller.abort();
+    };
   }, [currentPage, loadData, searchQuery]);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchCharacter = async () => {
-      await loadSingleCharacter(characterId);
+      await loadSingleCharacter(characterId, controller.signal);
     };
 
     fetchCharacter();
+
+    return () => {
+      controller.abort();
+    };
   }, [characterId, loadSingleCharacter]);
 
   const onSearch = async (query: string) => {

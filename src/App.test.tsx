@@ -1,58 +1,31 @@
 import { render, screen } from '@testing-library/react';
-import App from './App';
+import { ErrorBoundary } from '@components/ErrorBoundary';
 import userEvent from '@testing-library/user-event';
-import { SearchContainer } from '@components/SearchContainer';
+import App from './App';
+import { MemoryRouter } from 'react-router';
+
+function ThrowError({ shouldThrow }: { shouldThrow: boolean }) {
+  if (shouldThrow) {
+    throw new Error('Component error!');
+  }
+  return <div>Component working fine</div>;
+}
 
 describe('Main App Component Tests', () => {
   describe('ErrorBoundary', () => {
-    it('Displays fallback UI when error occurs', () => {
+    it('Displays fallback UI when error occurs', async () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const renderSpy = vi
-        .spyOn(SearchContainer.prototype, 'render')
-        .mockImplementation(() => {
-          throw new Error('Test Crash');
-        });
 
-      render(<App />);
+      render(
+        <ErrorBoundary>
+          <ThrowError shouldThrow={true} />
+        </ErrorBoundary>
+      );
 
-      const errorText = screen.getByText(/Something went wrong/i);
-      expect(errorText).toBeInTheDocument();
-      const reloadButton = screen.getByRole('button', { name: 'Reload' });
-      expect(reloadButton).toBeInTheDocument();
-
-      renderSpy.mockRestore();
-      spy.mockRestore();
-    });
-
-    it('Error Button throws error when test button is clicked', async () => {
-      const user = userEvent.setup();
-      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      render(<App />);
-
-      const errorButton = await screen.findByRole('button', { name: '!' });
-      await user.click(errorButton);
-
-      const errorText = await screen.findByText(/Something went wrong/i);
-      expect(errorText).toBeInTheDocument();
-
-      spy.mockRestore();
-    });
-
-    it('Recovers from error when Reload button is clicked', async () => {
-      const user = userEvent.setup();
-      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      render(<App />);
-
-      const errorButton = await screen.findByRole('button', { name: '!' });
-      await user.click(errorButton);
-
-      const reloadButton = screen.getByRole('button', { name: 'Reload' });
-      expect(reloadButton).toBeInTheDocument();
-
-      await user.click(reloadButton);
-
-      const errorText = screen.queryByText(/Something went wrong/i);
-      expect(errorText).not.toBeInTheDocument();
+      expect(screen.queryByText(/Something went wrong/i)).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Reload' })
+      ).toBeInTheDocument();
 
       spy.mockRestore();
     });
@@ -62,14 +35,55 @@ describe('Main App Component Tests', () => {
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
-      vi.spyOn(SearchContainer.prototype, 'render').mockImplementation(() => {
-        throw new Error('Test Crash');
-      });
-
-      render(<App />);
+      render(
+        <ErrorBoundary>
+          <ThrowError shouldThrow={true} />
+        </ErrorBoundary>
+      );
 
       expect(consoleSpy).toHaveBeenCalled();
       consoleSpy.mockRestore();
     });
+  });
+
+  it('Error Button throws error when test button is clicked', async () => {
+    const user = userEvent.setup();
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    const errorButton = await screen.findByRole('button', { name: '!' });
+    await user.click(errorButton);
+
+    const errorText = await screen.findByText(/Something went wrong/i);
+    expect(errorText).toBeInTheDocument();
+
+    spy.mockRestore();
+  });
+
+  it('Recovers from error when Reload button is clicked', async () => {
+    const user = userEvent.setup();
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    const errorButton = await screen.findByRole('button', { name: '!' });
+    await user.click(errorButton);
+
+    const reloadButton = screen.getByRole('button', { name: 'Reload' });
+    expect(reloadButton).toBeInTheDocument();
+
+    await user.click(reloadButton);
+
+    const errorText = screen.queryByText(/Something went wrong/i);
+    expect(errorText).not.toBeInTheDocument();
+
+    spy.mockRestore();
   });
 });

@@ -1,6 +1,9 @@
 import type { Character, ResponseData } from '@interfaces/shared/types';
 import { BASE_API_URL } from '../constants/api';
 
+const API_RATE_LIMIT_ERROR =
+  'API rate limit exceeded or network issue. Please try using a VPN or wait a little.';
+
 export async function getCharacters(
   page: number = 1,
   name: string = ''
@@ -10,12 +13,19 @@ export async function getCharacters(
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(handleResponseError(response.status));
+      const errorText = await response.text();
+      throw new Error(errorText || response.statusText);
     }
 
     const result = await response.json();
     return result;
   } catch (error: unknown) {
+    if (
+      error instanceof Error &&
+      error.message.toLowerCase().includes('failed to fetch')
+    ) {
+      throw new Error(API_RATE_LIMIT_ERROR);
+    }
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Response error: ${message}`);
   }
@@ -27,23 +37,20 @@ export async function getSingleCharacter(id: number): Promise<Character> {
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(handleResponseError(response.status));
+      const errorText = await response.text();
+      throw new Error(errorText || response.statusText);
     }
 
     const result = await response.json();
     return result;
   } catch (error: unknown) {
+    if (
+      error instanceof Error &&
+      error.message.toLowerCase().includes('failed to fetch')
+    ) {
+      throw new Error(API_RATE_LIMIT_ERROR);
+    }
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Response error: ${message}`);
   }
-}
-
-function handleResponseError(status: number): string {
-  if (status === 429) {
-    return 'Too many requests. Please slow down and try again later.';
-  }
-  if (status === 404) {
-    return 'Characters not found.';
-  }
-  return `Server returned status ${status}`;
 }

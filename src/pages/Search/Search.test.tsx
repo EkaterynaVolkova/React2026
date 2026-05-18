@@ -131,7 +131,11 @@ describe('Search Component Tests', () => {
 
       await waitFor(
         () => {
-          expect(getCharacters).toHaveBeenCalledWith(1, text);
+          expect(getCharacters).toHaveBeenCalledWith(
+            1,
+            text,
+            expect.any(AbortSignal)
+          );
         },
         { timeout: 2000 }
       );
@@ -200,7 +204,7 @@ describe('Search Component Tests', () => {
 
     const page2Button = await screen.findByRole('button', { name: '2' });
     await user.click(page2Button);
-    expect(getCharacters).toHaveBeenCalledWith(2, '');
+    expect(getCharacters).toHaveBeenCalledWith(2, '', expect.any(AbortSignal));
   });
 
   it('Handles last page change when » button is clicked', async () => {
@@ -220,7 +224,8 @@ describe('Search Component Tests', () => {
 
     expect(getCharacters).toHaveBeenCalledWith(
       searchResultsJSON.info.pages,
-      ''
+      '',
+      expect.any(AbortSignal)
     );
   });
 
@@ -239,6 +244,6 @@ describe('Search Component Tests', () => {
     const prevPageButton = await screen.findByRole('button', { name: '‹' });
     await user.click(prevPageButton);
 
-    expect(getCharacters).toHaveBeenCalledWith(2, '');
+    expect(getCharacters).toHaveBeenCalledWith(2, '', expect.any(AbortSignal));
   });
 });

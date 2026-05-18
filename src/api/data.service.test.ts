@@ -22,7 +22,10 @@ describe('DataService Tests', () => {
 
     const results = await getCharacters(1, 'Rick');
 
-    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('Rick'));
+    expect(fetchSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Rick'),
+      expect.any(Object)
+    );
     expect(results.results).toEqual(mockCharacters);
   });
 
@@ -49,7 +52,10 @@ describe('DataService Tests', () => {
 
     await getCharacters();
 
-    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('name='));
+    expect(fetchSpy).toHaveBeenCalledWith(
+      expect.stringContaining('name='),
+      expect.any(Object)
+    );
   });
 
   it('Returns character on successful fetch', async () => {
@@ -64,7 +70,10 @@ describe('DataService Tests', () => {
 
     const result = await getSingleCharacter(1);
 
-    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('1'));
+    expect(fetchSpy).toHaveBeenCalledWith(
+      expect.stringContaining('1'),
+      expect.any(Object)
+    );
     expect(result).toEqual(mockCharacter);
   });
 

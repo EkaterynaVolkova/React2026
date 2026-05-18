@@ -28,15 +28,16 @@ export const Search = () => {
 
   const currentPage = Number(searchParams.get('page')) || 1;
   const characterId = Number(searchParams.get('id')) || null;
-  const searchQuery = searchParams.get('query') || storedQuery || '';
+  const searchQuery = storedQuery || '';
+  const hasPageParam = searchParams.has('page');
 
   useEffect(() => {
-    if (!searchParams.has('page')) {
-      const nextParams = new URLSearchParams(searchParams);
+    if (!hasPageParam) {
+      const nextParams = new URLSearchParams(window.location.search);
       nextParams.set('page', '1');
       setSearchParams(nextParams, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  }, [hasPageParam, setSearchParams]);
 
   const loadData = useCallback(async (page: number, query: string) => {
     setIsLoading(true);
@@ -151,7 +152,7 @@ export const Search = () => {
             <ResultsGrid searchResults={tasks} onCardClick={onCardClick} />
           )}
 
-          {isLoading || (
+          {!isLoading && (
             <Pagination
               infoData={infoData}
               onPageChange={onPageChange}

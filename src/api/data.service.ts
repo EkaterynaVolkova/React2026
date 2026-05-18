@@ -10,7 +10,7 @@ export async function getCharacters(
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
+      throw new Error(handleResponseError(response.status));
     }
 
     const result = await response.json();
@@ -27,7 +27,7 @@ export async function getSingleCharacter(id: number): Promise<Character> {
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
+      throw new Error(handleResponseError(response.status));
     }
 
     const result = await response.json();
@@ -36,4 +36,14 @@ export async function getSingleCharacter(id: number): Promise<Character> {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Response error: ${message}`);
   }
+}
+
+function handleResponseError(status: number): string {
+  if (status === 429) {
+    return 'Too many requests. Please slow down and try again later.';
+  }
+  if (status === 404) {
+    return 'Characters not found.';
+  }
+  return `Server returned status ${status}`;
 }

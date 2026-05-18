@@ -14,7 +14,7 @@ export const CharacterDetails = () => {
   const { character, isDetailsLoading, onCardClose, errorDetailsMessage } =
     useOutletContext<CharacterDetailsOutletContext>();
 
-  if (!character.id) return null;
+  if (!character?.id && !errorDetailsMessage) return null;
 
   return (
     <div className="details-column">
@@ -31,25 +31,27 @@ export const CharacterDetails = () => {
       {isDetailsLoading ? (
         <div className="spinner"></div>
       ) : (
-        <div className="details-card">
-          <img
-            src={character.image}
-            alt={character.name}
-            className="details-image"
-          />
-          <div className="details-content">
-            <h3>{character.name}</h3>
-            <p>
-              <strong>Status:</strong> {character.status}
-            </p>
-            <p>
-              <strong>Species:</strong> {character.species}
-            </p>
-            <p>
-              <strong>Gender:</strong> {character.gender}
-            </p>
+        character?.id && (
+          <div className="details-card">
+            <img
+              src={character.image}
+              alt={character.name}
+              className="details-image"
+            />
+            <div className="details-content">
+              <h3>{character.name}</h3>
+              <p>
+                <strong>Status:</strong> {character.status}
+              </p>
+              <p>
+                <strong>Species:</strong> {character.species}
+              </p>
+              <p>
+                <strong>Gender:</strong> {character.gender}
+              </p>
+            </div>
           </div>
-        </div>
+        )
       )}
     </div>
   );

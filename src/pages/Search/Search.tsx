@@ -128,6 +128,15 @@ export const Search = () => {
     setSearchParams(nextParams);
   };
 
+  const onMainPanelClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const clickedCard = (e.target as HTMLElement).closest('.card');
+    const clickedPagination = (e.target as HTMLElement).closest('.pagination');
+
+    if (!clickedCard && !clickedPagination) {
+      onCardClose();
+    }
+  };
+
   if (shouldCrash) {
     throw new Error(TEST_CRASH_APP_ERROR);
   }
@@ -139,7 +148,7 @@ export const Search = () => {
       <TopControls onSearch={onSearch} initialValue={searchQuery} />
 
       <div className="content-columns">
-        <div className="main-column">
+        <div className="main-column" onClick={onMainPanelClick}>
           {errorMessage && (
             <ErrorMessage className="error-message">
               {errorMessage}

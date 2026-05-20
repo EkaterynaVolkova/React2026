@@ -31,7 +31,7 @@ describe('Search Component Tests', () => {
       window.localStorage.clear();
     });
 
-    it('Retrieves saved search term on component mount', () => {
+    it('Retrieves saved search term on component mount', async () => {
       vi.mocked(getCharacters).mockResolvedValue(emptyResponse);
 
       const text = 'Rick';
@@ -45,8 +45,11 @@ describe('Search Component Tests', () => {
         </MemoryRouter>
       );
 
-      const input = screen.getByPlaceholderText(/Search/i);
+      const input = await screen.findByPlaceholderText(/Search/i);
       expect(input).toHaveValue(text);
+      await waitFor(() => {
+        expect(getCharacters).toHaveBeenCalled();
+      });
     });
 
     it('Overwrites existing localStorage value when new search is performed', async () => {

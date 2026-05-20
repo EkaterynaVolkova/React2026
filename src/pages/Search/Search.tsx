@@ -11,6 +11,7 @@ import { APP_TITLE, DEFAULT_ERROR_MSG } from '../../constants/global';
 import { Outlet, useSearchParams } from 'react-router';
 import { Pagination } from '@components/Pagination';
 import './Search.css';
+import { Spinner } from '@components/Spinner';
 
 const TEST_CRASH_APP_ERROR = 'I crashed!';
 
@@ -23,7 +24,10 @@ export const Search = () => {
   const [shouldCrash, setShouldCrash] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [errorDetailsMessage, setErrorDetailsMessage] = useState('');
-  const [storedQuery, setStoredQuery] = useLocalStorage(SEARCH_QUERY_KEY);
+  const [storedQuery, setStoredQuery] = useLocalStorage<string>(
+    SEARCH_QUERY_KEY,
+    ''
+  );
   const [searchParams, setSearchParams] = useSearchParams();
 
   const currentPage = Number(searchParams.get('page')) || 1;
@@ -69,6 +73,8 @@ export const Search = () => {
 
       if (!id) {
         setCharacter({} as Character);
+        setErrorDetailsMessage('');
+        setIsDetailsLoading(false);
         return;
       }
 
@@ -178,7 +184,7 @@ export const Search = () => {
           )}
 
           {isLoading ? (
-            <div className="spinner"></div>
+            <Spinner />
           ) : (
             <ResultsGrid searchResults={tasks} onCardClick={onCardClick} />
           )}

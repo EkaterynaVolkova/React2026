@@ -1,3 +1,4 @@
+import { ThemeSwitcher } from '@components/ThemeSwitcher';
 import { NavLink } from 'react-router';
 
 export const AppNav = () => {
@@ -9,6 +10,7 @@ export const AppNav = () => {
       <NavLink to="/about" className="button">
         About
       </NavLink>
+      <ThemeSwitcher />
     </nav>
   );
 };

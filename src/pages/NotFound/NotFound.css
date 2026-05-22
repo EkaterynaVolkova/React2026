@@ -21,7 +21,7 @@
 
 .error-page__container .title {
   font-size: 1.75rem;
-  color: var(--color-gray-5);
+  color: var(--accent);
   margin: var(--spacing-md) 0 var(--spacing-sm) 0;
 }
 

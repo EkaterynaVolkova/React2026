@@ -1,3 +1,24 @@
+[data-theme='light'] {
+  --background-primary: var(--background-primary-light);
+  --background-secondary: var(--color-gray-1);
+  --accent: var(--accent-light);
+  --accent-hover: var(--accent-light-hover);
+  --color-primary: var(--color-black);
+}
+
+[data-theme='dark'] {
+  --background-primary: var(--background-primary-dark);
+  --background-secondary: var(--color-gray-1);
+  --accent: var(--accent-dark);
+  --accent-hover: var(--accent-dark-hover);
+  --color-primary: var(--color-white);
+}
+
+* {
+  background-color: var(--background-primary);
+  color: var(--color-primary);
+}
+
 .container {
   padding: var(--spacing-md);
   font-family: var(--font-sans);
@@ -15,12 +36,12 @@
 }
 
 .primary-button {
-  background-color: var(--color-blue-1);
+  background-color: var(--accent);
   color: var(--color-white);
 }
 
 .primary-button:hover {
-  background-color: var(--color-blue-2);
+  background-color: var(--accent-hover);
 }
 
 .error-button {

@@ -17,6 +17,12 @@
   transform: translateY(-5px);
 }
 
+.card-checkbox {
+  position: absolute;
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+}
+
 .card-image {
   width: 100%;
   height: 200px;

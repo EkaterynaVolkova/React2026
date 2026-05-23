@@ -30,3 +30,10 @@ export interface ResponseData {
   info: ResponseInfo;
   results: Character[];
 }
+
+export type Theme = 'light' | 'dark';
+
+export interface ThemeContextType {
+  theme: Theme;
+  toggleTheme: () => void;
+}

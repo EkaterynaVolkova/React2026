@@ -10,10 +10,12 @@ const useLocalStorage = <T>(key: string, initialValue: T) => {
     }
   });
 
-  const saveValue = (data: T) => {
+  const saveValue = (data: T | ((val: T) => T)) => {
     try {
-      setValue(data);
-      localStorage.setItem(key, JSON.stringify(data));
+      const valueToStore =
+        typeof data === 'function' ? (data as (val: T) => T)(value) : data;
+      setValue(valueToStore);
+      localStorage.setItem(key, JSON.stringify(valueToStore));
     } catch (error) {
       console.error(error);
     }

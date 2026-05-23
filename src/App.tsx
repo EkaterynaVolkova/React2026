@@ -5,7 +5,7 @@ import { NotFound } from './pages/NotFound';
 import { About } from './pages/About';
 import { Layout } from '@components/Layout';
 import { CharacterDetails } from '@components/CharacterDetails';
-import ThemeProvider from './context/ThemeContext';
+import { ThemeProvider } from './context/ThemeProvider';
 
 const App = () => {
   return (

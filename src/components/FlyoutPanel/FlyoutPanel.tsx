@@ -39,6 +39,8 @@ export const FlyoutPanel = () => {
     }, 0);
   };
 
+  if (!isVisible) return null;
+
   return (
     <div
       className={`control-panel-container ${isVisible ? 'sticky' : 'hidden'}`}
@@ -56,6 +58,7 @@ export const FlyoutPanel = () => {
           </Button>
           <a
             ref={linkEl}
+            data-testid="csv-download-link"
             download={`${count}_items.csv`}
             href={downloadUrl}
             style={{ display: 'none' }}

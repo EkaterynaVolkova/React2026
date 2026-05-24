@@ -26,15 +26,19 @@ const selectionStore: StateCreator<
 > = (set) => ({
   ...initialState,
   toggleItem: (id) => {
-    set((state) => {
-      const index = state.selectedIds.indexOf(id);
+    set(
+      (state) => {
+        const index = state.selectedIds.indexOf(id);
 
-      if (index !== -1) {
-        state.selectedIds.splice(index, 1);
-      } else {
-        state.selectedIds.push(id);
-      }
-    });
+        if (index !== -1) {
+          state.selectedIds.splice(index, 1);
+        } else {
+          state.selectedIds.push(id);
+        }
+      },
+      false,
+      'toggleItem'
+    );
   },
   reset: () => set(initialState),
 });
@@ -53,3 +57,4 @@ export const useSelectionIds = () =>
   useSelectionStore((state) => state.selectedIds);
 export const toggleItem = (id: number) =>
   useSelectionStore.getState().toggleItem(id);
+export const resetItems = () => useSelectionStore.getState().reset();

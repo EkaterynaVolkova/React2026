@@ -1,7 +1,7 @@
 .details-column {
   position: sticky;
   top: var(--spacing-md);
-  height: calc(100vh - var(--spacing-lg));
+  height: 80vh;
   overflow-y: auto;
   padding: var(--spacing-md);
   background-color: var(--color-white);

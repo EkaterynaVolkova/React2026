@@ -14,6 +14,10 @@
   --color-primary: var(--color-white);
 }
 
+body {
+  padding-bottom: 130px;
+}
+
 * {
   background-color: var(--background-primary);
   color: var(--color-primary);
@@ -55,6 +59,7 @@
   border-radius: var(--border-radius-round);
   font-size: var(--font-size-xl);
   box-shadow: var(--box-shadow-red);
+  z-index: 1000;
 }
 
 .error-button:hover {

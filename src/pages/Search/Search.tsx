@@ -12,6 +12,7 @@ import { Outlet, useSearchParams } from 'react-router';
 import { Pagination } from '@components/Pagination';
 import './Search.css';
 import { Spinner } from '@components/Spinner';
+import { FlyoutPanel } from '@components/FlyoutPanel';
 
 const TEST_CRASH_APP_ERROR = 'I crashed!';
 
@@ -207,6 +208,7 @@ export const Search = () => {
           }}
         />
       </div>
+      <FlyoutPanel />
 
       <Button className="error-button" onClick={onError}>
         !

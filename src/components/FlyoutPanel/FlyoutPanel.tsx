@@ -1,10 +1,43 @@
 import { Button } from '@components/Button';
-import { resetItems, useSelectionIds } from '../../stores/selectionStore';
+import { resetItems, useSelectionItems } from '../../stores/selectionStore';
 import './FlyoutPanel.css';
+import { useRef, useState } from 'react';
 
 export const FlyoutPanel = () => {
-  const count = useSelectionIds().length;
+  const [downloadUrl, setDownloadUrl] = useState('');
+  const linkEl = useRef<HTMLAnchorElement>(null);
+  const selectedItems = useSelectionItems();
+
+  const count = useSelectionItems().length;
   const isVisible = count > 0;
+
+  const handleDownload = () => {
+    if (selectedItems.length === 0) return;
+
+    const csvHeader = ['ID', 'Name', 'Gender', 'Species', 'Status'];
+
+    const csvRows = selectedItems.map((item) => [
+      item.id,
+      `"${item.name}"`,
+      `"${item.gender}"`,
+      `"${item.species}"`,
+      `"${item.status}"`,
+    ]);
+
+    const csvContent = [csvHeader, ...csvRows]
+      .map((row) => row.join(';'))
+      .join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = URL.createObjectURL(blob);
+    setDownloadUrl(link);
+    setTimeout(() => {
+      if (linkEl.current) {
+        linkEl.current.click();
+        URL.revokeObjectURL(link);
+        setDownloadUrl('');
+      }
+    }, 0);
+  };
 
   return (
     <div
@@ -18,7 +51,17 @@ export const FlyoutPanel = () => {
           <Button className="primary-button" onClick={resetItems}>
             Unselect all
           </Button>
-          <Button className="primary-button">Download</Button>
+          <Button className="primary-button" onClick={handleDownload}>
+            Download
+          </Button>
+          <a
+            ref={linkEl}
+            download={`${count}_items.csv`}
+            href={downloadUrl}
+            style={{ display: 'none' }}
+          >
+            Download
+          </a>
         </div>
       </div>
     </div>

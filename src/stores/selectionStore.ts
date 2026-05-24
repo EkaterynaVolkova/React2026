@@ -1,18 +1,19 @@
+import type { Character } from '@interfaces/shared/types';
 import { create, type StateCreator } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
 interface SelectionPropsState {
-  selectedIds: number[];
+  selectedItems: Character[];
 }
 
 type SelectionState = typeof initialState & {
-  toggleItem: (id: number) => void;
+  toggleItem: (item: Character) => void;
   reset: () => void;
 };
 
 const initialState: SelectionPropsState = {
-  selectedIds: [],
+  selectedItems: [],
 };
 
 const selectionStore: StateCreator<
@@ -25,15 +26,15 @@ const selectionStore: StateCreator<
   []
 > = (set) => ({
   ...initialState,
-  toggleItem: (id) => {
+  toggleItem: (item) => {
     set(
       (state) => {
-        const index = state.selectedIds.indexOf(id);
+        const index = state.selectedItems.findIndex((x) => x.id === item.id);
 
         if (index !== -1) {
-          state.selectedIds.splice(index, 1);
+          state.selectedItems.splice(index, 1);
         } else {
-          state.selectedIds.push(id);
+          state.selectedItems.push(item);
         }
       },
       false,
@@ -48,13 +49,13 @@ export const useSelectionStore = create<SelectionState>()(
     persist(immer(selectionStore), {
       name: 'selection-storage',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ selectedIds: state.selectedIds }),
+      partialize: (state) => ({ selectedItems: state.selectedItems }),
     })
   )
 );
 
-export const useSelectionIds = () =>
-  useSelectionStore((state) => state.selectedIds);
-export const toggleItem = (id: number) =>
-  useSelectionStore.getState().toggleItem(id);
+export const useSelectionItems = () =>
+  useSelectionStore((state) => state.selectedItems);
+export const toggleItem = (item: Character) =>
+  useSelectionStore.getState().toggleItem(item);
 export const resetItems = () => useSelectionStore.getState().reset();

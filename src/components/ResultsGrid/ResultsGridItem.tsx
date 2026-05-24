@@ -1,5 +1,5 @@
 import type { Character } from '@interfaces/shared/types';
-import { toggleItem, useSelectionIds } from '../../stores/selectionStore';
+import { toggleItem, useSelectionItems } from '../../stores/selectionStore';
 
 interface ResultsGridItemProps {
   item: Character;
@@ -15,14 +15,16 @@ export const ResultsGridItem = (props: ResultsGridItemProps) => {
         ? 'status-dead'
         : 'status-unknown';
 
-  const isChecked = Boolean(useSelectionIds().find((id) => id === item.id));
+  const isChecked = Boolean(
+    useSelectionItems().find((val) => val.id === item.id)
+  );
 
   const onCheckboxClick = (event: React.MouseEvent) => {
     event.stopPropagation();
   };
 
   const onCheckboxChange = () => {
-    toggleItem(item.id);
+    toggleItem(item);
   };
 
   return (

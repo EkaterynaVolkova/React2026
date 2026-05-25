@@ -1,7 +1,7 @@
 import { Button } from '@components/Button';
-import { resetItems, useSelectionItems } from '../../stores/selectionStore';
 import './FlyoutPanel.css';
 import { useRef, useState } from 'react';
+import { resetItems, useSelectionItems } from '../../stores/useGlobalStore';
 
 export const FlyoutPanel = () => {
   const [downloadUrl, setDownloadUrl] = useState('');

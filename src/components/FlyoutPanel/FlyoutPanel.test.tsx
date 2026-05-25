@@ -1,8 +1,8 @@
 import userEvent from '@testing-library/user-event';
-import { useSelectionStore } from '../../stores/selectionStore';
 import type { Character } from '@interfaces/shared/types';
 import { FlyoutPanel } from './FlyoutPanel';
 import { render, screen, waitFor } from '@testing-library/react';
+import { useGlobalStore } from '../../stores/useGlobalStore';
 
 const mockCharacters = [
   {
@@ -23,7 +23,7 @@ const mockCharacters = [
 
 beforeEach(() => {
   localStorage.clear();
-  useSelectionStore.getState().reset();
+  useGlobalStore.getState().reset();
   window.URL.createObjectURL = vi.fn();
   window.URL.revokeObjectURL = vi.fn();
 });
@@ -31,9 +31,7 @@ beforeEach(() => {
 it('Generates CSV and sets download attributes', async () => {
   const user = userEvent.setup();
 
-  mockCharacters.forEach((char) =>
-    useSelectionStore.getState().toggleItem(char)
-  );
+  mockCharacters.forEach((char) => useGlobalStore.getState().toggleItem(char));
 
   render(<FlyoutPanel />);
 

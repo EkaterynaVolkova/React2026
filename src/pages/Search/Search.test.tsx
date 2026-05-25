@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 import { SEARCH_QUERY_KEY } from '../../constants/storage';
 import { getCharacters } from '@api/data.service';
 import { MemoryRouter, Route, Routes } from 'react-router';
-import { useSelectionStore } from '../../stores/selectionStore';
+import { useGlobalStore } from '../../stores/useGlobalStore';
 
 const emptyResponse = {
   info: {
@@ -198,7 +198,7 @@ describe('Search Component Tests', () => {
     beforeEach(() => {
       vi.clearAllMocks();
       window.localStorage.clear();
-      useSelectionStore.getState().reset();
+      useGlobalStore.getState().reset();
     });
 
     it('Handles page change when pagination button is clicked', async () => {

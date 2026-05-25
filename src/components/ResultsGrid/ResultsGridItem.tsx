@@ -1,5 +1,5 @@
 import type { Character } from '@interfaces/shared/types';
-import { toggleItem, useSelectionItems } from '../../stores/selectionStore';
+import { toggleItem, useSelectionItems } from '../../stores/useGlobalStore';
 
 interface ResultsGridItemProps {
   item: Character;

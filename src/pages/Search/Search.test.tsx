@@ -8,6 +8,7 @@ import userEvent from '@testing-library/user-event';
 import { SEARCH_QUERY_KEY } from '../../constants/storage';
 import { getCharacters } from '@api/data.service';
 import { MemoryRouter, Route, Routes } from 'react-router';
+import { useGlobalStore } from '../../stores/useGlobalStore';
 
 const emptyResponse = {
   info: {
@@ -31,7 +32,7 @@ describe('Search Component Tests', () => {
       window.localStorage.clear();
     });
 
-    it('Retrieves saved search term on component mount', () => {
+    it('Retrieves saved search term on component mount', async () => {
       vi.mocked(getCharacters).mockResolvedValue(emptyResponse);
 
       const text = 'Rick';
@@ -45,8 +46,11 @@ describe('Search Component Tests', () => {
         </MemoryRouter>
       );
 
-      const input = screen.getByPlaceholderText(/Search/i);
+      const input = await screen.findByPlaceholderText(/Search/i);
       expect(input).toHaveValue(text);
+      await waitFor(() => {
+        expect(getCharacters).toHaveBeenCalled();
+      });
     });
 
     it('Overwrites existing localStorage value when new search is performed', async () => {
@@ -190,60 +194,111 @@ describe('Search Component Tests', () => {
     });
   });
 
-  it('Handles page change when pagination button is clicked', async () => {
-    vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
-    const user = userEvent.setup();
+  describe('Rendering Tests', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      window.localStorage.clear();
+      useGlobalStore.getState().reset();
+    });
 
-    render(
-      <MemoryRouter initialEntries={['/?page=1']}>
-        <Routes>
-          <Route path="/" element={<Search />} />
-        </Routes>
-      </MemoryRouter>
-    );
+    it('Handles page change when pagination button is clicked', async () => {
+      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
+      const user = userEvent.setup();
 
-    const page2Button = await screen.findByRole('button', { name: '2' });
-    await user.click(page2Button);
-    expect(getCharacters).toHaveBeenCalledWith(2, '', expect.any(AbortSignal));
-  });
+      render(
+        <MemoryRouter initialEntries={['/?page=1']}>
+          <Routes>
+            <Route path="/" element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      );
 
-  it('Handles last page change when » button is clicked', async () => {
-    vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
-    const user = userEvent.setup();
+      const page2Button = await screen.findByRole('button', { name: '2' });
+      await user.click(page2Button);
+      expect(getCharacters).toHaveBeenCalledWith(
+        2,
+        '',
+        expect.any(AbortSignal)
+      );
+    });
 
-    render(
-      <MemoryRouter initialEntries={['/?page=1']}>
-        <Routes>
-          <Route path="/" element={<Search />} />
-        </Routes>
-      </MemoryRouter>
-    );
+    it('Handles last page change when » button is clicked', async () => {
+      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
+      const user = userEvent.setup();
 
-    const lastPageButton = await screen.findByRole('button', { name: '»' });
-    await user.click(lastPageButton);
+      render(
+        <MemoryRouter initialEntries={['/?page=1']}>
+          <Routes>
+            <Route path="/" element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      );
 
-    expect(getCharacters).toHaveBeenCalledWith(
-      searchResultsJSON.info.pages,
-      '',
-      expect.any(AbortSignal)
-    );
-  });
+      const lastPageButton = await screen.findByRole('button', { name: '»' });
+      await user.click(lastPageButton);
 
-  it('Handles previous page change when ‹ button is clicked', async () => {
-    vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
-    const user = userEvent.setup();
+      expect(getCharacters).toHaveBeenCalledWith(
+        searchResultsJSON.info.pages,
+        '',
+        expect.any(AbortSignal)
+      );
+    });
 
-    render(
-      <MemoryRouter initialEntries={['/?page=3']}>
-        <Routes>
-          <Route path="/" element={<Search />} />
-        </Routes>
-      </MemoryRouter>
-    );
+    it('Handles previous page change when ‹ button is clicked', async () => {
+      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
+      const user = userEvent.setup();
 
-    const prevPageButton = await screen.findByRole('button', { name: '‹' });
-    await user.click(prevPageButton);
+      render(
+        <MemoryRouter initialEntries={['/?page=3']}>
+          <Routes>
+            <Route path="/" element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      );
 
-    expect(getCharacters).toHaveBeenCalledWith(2, '', expect.any(AbortSignal));
+      const prevPageButton = await screen.findByRole('button', { name: '‹' });
+      await user.click(prevPageButton);
+
+      expect(getCharacters).toHaveBeenCalledWith(
+        2,
+        '',
+        expect.any(AbortSignal)
+      );
+    });
+
+    it('FlyoutPanel component is visible when selected item', async () => {
+      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
+      const user = userEvent.setup();
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route path="/" element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      const checkbox = await screen.findAllByRole('checkbox');
+      await user.click(checkbox[0]);
+
+      expect(
+        await screen.findByText(/Number of Selected Items/i)
+      ).toBeVisible();
+    });
+
+    it('FlyoutPanel component is not visible when no selected item', async () => {
+      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route path="/" element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      );
+
+      const flyoutText = screen.queryByText(/Number of Selected Items/i);
+      expect(flyoutText).not.toBeInTheDocument();
+    });
   });
 });

@@ -2,6 +2,14 @@
   --font-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   --font-size-xl: 1.5rem;
 
+  --background-primary-light: #ffffff;
+  --background-primary-dark: #212529;
+
+  --accent-light: #007bff;
+  --accent-dark: #ff4757;
+  --accent-light-hover: #0056b3;
+  --accent-dark-hover: #be2f3b;
+
   --color-white: #ffffff;
   --color-black: #000000;
 

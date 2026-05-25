@@ -14,8 +14,8 @@ export async function getCharacters(
   try {
     const response = await fetch(url, { signal });
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || response.statusText);
+      const errorText = await response.json();
+      throw new Error(errorText.error || response.statusText);
     }
 
     const result = await response.json();
@@ -41,8 +41,8 @@ export async function getSingleCharacter(
   try {
     const response = await fetch(url, { signal });
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || response.statusText);
+      const errorText = await response.json();
+      throw new Error(errorText.error || response.statusText);
     }
 
     const result = await response.json();

@@ -2,6 +2,8 @@ import type { Character } from '@interfaces/shared/types';
 import { useOutletContext } from 'react-router';
 import './CharacterDetail.css';
 import { ErrorMessage } from '@components/ErrorMessage';
+import { Spinner } from '@components/Spinner';
+import { Button } from '@components/Button';
 
 type CharacterDetailsOutletContext = {
   character: Character;
@@ -18,9 +20,9 @@ export const CharacterDetails = () => {
 
   return (
     <div className="details-column">
-      <button onClick={onCardClose} className="button close-btn">
+      <Button className="button close-btn" onClick={onCardClose}>
         Close
-      </button>
+      </Button>
 
       {errorDetailsMessage && (
         <ErrorMessage className="error-message">
@@ -29,7 +31,7 @@ export const CharacterDetails = () => {
       )}
 
       {isDetailsLoading ? (
-        <div className="spinner"></div>
+        <Spinner />
       ) : (
         character?.id && (
           <div className="details-card">

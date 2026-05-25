@@ -1,0 +1,41 @@
+.control-panel-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 16px 24px;
+  box-sizing: border-box;
+  z-index: 100;
+
+  background-color: var(--background-primary);
+  border-top: var(--border);
+  box-shadow: var(--box-shadow-dark);
+
+  transition:
+    transform 0.3s ease-in-out,
+    opacity 0.3s ease-in-out,
+    background-color 0.3s;
+}
+
+.control-panel-container.sticky {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.control-panel-container.hidden {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.counter span {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-top: var(--spacing-md);
+}

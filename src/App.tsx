@@ -5,22 +5,25 @@ import { NotFound } from './pages/NotFound';
 import { About } from './pages/About';
 import { Layout } from '@components/Layout';
 import { CharacterDetails } from '@components/CharacterDetails';
+import { ThemeProvider } from './context/ThemeProvider';
 
 const App = () => {
   return (
     <>
-      <ErrorBoundary>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route path="/" element={<Search />}>
-              <Route path="" element={<CharacterDetails />} />
-            </Route>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route path="/" element={<Search />}>
+                <Route path="" element={<CharacterDetails />} />
+              </Route>
 
-            <Route path="about" element={<About />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
-      </ErrorBoundary>
+              <Route path="about" element={<About />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </ErrorBoundary>
+      </ThemeProvider>
     </>
   );
 };

@@ -1,9 +1,9 @@
-import { getCharacters, getSingleCharacter } from '@api/data.service';
+import { getSingleCharacter } from '@api/data.service';
 import { Button } from '@components/Button';
 import { ErrorMessage } from '@components/ErrorMessage';
 import { ResultsGrid } from '@components/ResultsGrid';
 import { TopControls } from '@components/TopControls';
-import type { Character, ResponseInfo } from '@interfaces/shared/types';
+import type { Character } from '@interfaces/shared/types';
 import { useCallback, useEffect, useState } from 'react';
 import useLocalStorage from '../../hooks/useLocalStorage';
 import { SEARCH_QUERY_KEY } from '../../constants/storage';
@@ -13,17 +13,14 @@ import { Pagination } from '@components/Pagination';
 import './Search.css';
 import { Spinner } from '@components/Spinner';
 import { FlyoutPanel } from '@components/FlyoutPanel';
+import { useCharactersQuery } from '../../hooks/useCharactersQuery';
 
 const TEST_CRASH_APP_ERROR = 'I crashed!';
 
 export const Search = () => {
-  const [tasks, setTasks] = useState([] as Character[]);
-  const [infoData, setInfoData] = useState({} as ResponseInfo);
   const [character, setCharacter] = useState({} as Character);
-  const [isLoading, setIsLoading] = useState(false);
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
   const [shouldCrash, setShouldCrash] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const [errorDetailsMessage, setErrorDetailsMessage] = useState('');
   const [storedQuery, setStoredQuery] = useLocalStorage<string>(
     SEARCH_QUERY_KEY,
@@ -36,6 +33,14 @@ export const Search = () => {
   const searchQuery = storedQuery || '';
   const hasPageParam = searchParams.has('page');
 
+  const {
+    data: charactersData,
+    error,
+    isLoading,
+    isSuccess,
+    isError,
+  } = useCharactersQuery(currentPage, searchQuery);
+
   useEffect(() => {
     if (!hasPageParam) {
       const nextParams = new URLSearchParams(window.location.search);
@@ -43,30 +48,6 @@ export const Search = () => {
       setSearchParams(nextParams, { replace: true });
     }
   }, [hasPageParam, setSearchParams]);
-
-  const loadData = useCallback(
-    async (page: number, query: string, signal?: AbortSignal) => {
-      setIsLoading(true);
-
-      try {
-        const tasks = await getCharacters(page, query, signal);
-        if (signal?.aborted) return;
-
-        setTasks(tasks.results);
-        setInfoData(tasks.info);
-        setErrorMessage('');
-      } catch (error: unknown) {
-        const message =
-          error instanceof Error ? error.message : DEFAULT_ERROR_MSG;
-        setErrorMessage(message);
-        setTasks([]);
-        setInfoData({} as ResponseInfo);
-      } finally {
-        if (!signal?.aborted) setIsLoading(false);
-      }
-    },
-    []
-  );
 
   const loadSingleCharacter = useCallback(
     async (id: number | null, signal?: AbortSignal) => {
@@ -96,20 +77,6 @@ export const Search = () => {
     },
     []
   );
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchData = async () => {
-      await loadData(currentPage, searchQuery, controller.signal);
-    };
-
-    fetchData();
-
-    return () => {
-      controller.abort();
-    };
-  }, [currentPage, loadData, searchQuery]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -178,21 +145,22 @@ export const Search = () => {
 
       <div className="content-columns">
         <div className="main-column" onClick={onMainPanelClick}>
-          {errorMessage && (
+          {isError && (
             <ErrorMessage className="error-message">
-              {errorMessage}
+              {error.message}
             </ErrorMessage>
           )}
-
-          {isLoading ? (
-            <Spinner />
-          ) : (
-            <ResultsGrid searchResults={tasks} onCardClick={onCardClick} />
+          {isLoading && <Spinner />}
+          {isSuccess && (
+            <ResultsGrid
+              searchResults={charactersData?.results}
+              onCardClick={onCardClick}
+            />
           )}
 
-          {!isLoading && (
+          {isSuccess && (
             <Pagination
-              infoData={infoData}
+              infoData={charactersData?.info}
               onPageChange={onPageChange}
               currentPage={currentPage}
             />

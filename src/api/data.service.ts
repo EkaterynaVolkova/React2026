@@ -33,7 +33,7 @@ export async function getCharacters(
 }
 
 export async function getSingleCharacter(
-  id: number,
+  id: number | null,
   signal?: AbortSignal
 ): Promise<Character> {
   const url = `${BASE_API_URL}/api/character/${id}`;

@@ -1,12 +1,9 @@
 import { getSingleCharacter } from '@api/data.service';
 import { useQuery } from '@tanstack/react-query';
-import { CACHE_TTL } from '../constants/global';
 
-export const useCharacterQuery = (id: number | null, signal?: AbortSignal) => {
+export const useCharacterQuery = (id: number) => {
   return useQuery({
     queryKey: ['character', id],
-    queryFn: async () => getSingleCharacter(id, signal),
-    staleTime: CACHE_TTL,
-    gcTime: CACHE_TTL * 2,
+    queryFn: async ({ signal }) => getSingleCharacter(id, signal),
   });
 };

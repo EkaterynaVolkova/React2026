@@ -12,6 +12,7 @@ import './Search.css';
 import { Spinner } from '@components/Spinner';
 import { FlyoutPanel } from '@components/FlyoutPanel';
 import { useCharactersQuery } from '../../hooks/useCharactersQuery';
+import { useQueryClient } from '@tanstack/react-query';
 
 const TEST_CRASH_APP_ERROR = 'I crashed!';
 
@@ -27,11 +28,12 @@ export const Search = () => {
   const characterId = Number(searchParams.get('id')) || null;
   const searchQuery = storedQuery || '';
   const hasPageParam = searchParams.has('page');
+  const queryClient = useQueryClient();
 
   const {
     data: charactersData,
     error,
-    isLoading,
+    isFetching,
     isSuccess,
     isError,
   } = useCharactersQuery(currentPage, searchQuery);
@@ -85,6 +87,12 @@ export const Search = () => {
     }
   };
 
+  const onRefresh = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ['characters', currentPage, searchQuery],
+    });
+  };
+
   if (shouldCrash) {
     throw new Error(TEST_CRASH_APP_ERROR);
   }
@@ -94,6 +102,9 @@ export const Search = () => {
       <h1>{APP_TITLE}</h1>
 
       <TopControls onSearch={onSearch} initialValue={searchQuery} />
+      <Button className="primary-button" onClick={onRefresh}>
+        Refresh
+      </Button>
 
       <div className="content-columns">
         <div className="main-column" onClick={onMainPanelClick}>
@@ -102,7 +113,7 @@ export const Search = () => {
               {error.message}
             </ErrorMessage>
           )}
-          {isLoading && <Spinner />}
+          {isFetching && <Spinner />}
           {isSuccess && (
             <ResultsGrid
               searchResults={charactersData?.results}

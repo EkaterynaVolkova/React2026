@@ -4,6 +4,7 @@ import { Spinner } from '@components/Spinner';
 import { Button } from '@components/Button';
 import { useCharacterQuery } from '../../hooks/useCharacterQuery';
 import { useOutletContext } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 
 type CharacterDetailsOutletContext = {
   characterId: number;
@@ -13,28 +14,40 @@ type CharacterDetailsOutletContext = {
 export const CharacterDetails = () => {
   const { characterId, onCardClose } =
     useOutletContext<CharacterDetailsOutletContext>();
+  const queryClient = useQueryClient();
 
   const {
     data: character,
     error,
-    isLoading,
+    isFetching,
     isSuccess,
     isError,
   } = useCharacterQuery(characterId);
 
   if (!character?.id) return null;
 
+  const onRefresh = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ['character', character?.id],
+    });
+  };
+
   return (
     <div className="details-column">
-      <Button className="button close-btn" onClick={onCardClose}>
-        Close
-      </Button>
+      <div className="details-controls">
+        <Button className="button close-btn" onClick={onCardClose}>
+          Close
+        </Button>
+        <Button className="primary-button" onClick={onRefresh}>
+          Refresh
+        </Button>
+      </div>
 
       {isError && (
         <ErrorMessage className="error-message">{error.message}</ErrorMessage>
       )}
 
-      {isLoading && <Spinner />}
+      {isFetching && <Spinner />}
 
       {isSuccess && (
         <div className="details-card">

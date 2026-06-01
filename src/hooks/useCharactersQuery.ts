@@ -11,5 +11,6 @@ export const useCharactersQuery = (
     queryKey: ['characters', page, query],
     queryFn: async () => getCharacters(page, query, signal),
     staleTime: CACHE_TTL,
+    gcTime: CACHE_TTL * 2,
   });
 };

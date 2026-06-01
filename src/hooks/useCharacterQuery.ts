@@ -7,5 +7,6 @@ export const useCharacterQuery = (id: number | null, signal?: AbortSignal) => {
     queryKey: ['character', id],
     queryFn: async () => getSingleCharacter(id, signal),
     staleTime: CACHE_TTL,
+    gcTime: CACHE_TTL * 2,
   });
 };

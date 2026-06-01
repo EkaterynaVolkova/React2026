@@ -1,59 +1,74 @@
-import type { Character } from '@interfaces/shared/types';
-import { useOutletContext } from 'react-router';
 import './CharacterDetail.css';
 import { ErrorMessage } from '@components/ErrorMessage';
 import { Spinner } from '@components/Spinner';
 import { Button } from '@components/Button';
+import { useCharacterQuery } from '../../hooks/useCharacterQuery';
+import { useOutletContext } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 
 type CharacterDetailsOutletContext = {
-  character: Character;
-  isDetailsLoading: boolean;
+  characterId: number;
   onCardClose: () => void;
-  errorDetailsMessage?: string;
 };
 
 export const CharacterDetails = () => {
-  const { character, isDetailsLoading, onCardClose, errorDetailsMessage } =
+  const { characterId, onCardClose } =
     useOutletContext<CharacterDetailsOutletContext>();
+  const queryClient = useQueryClient();
 
-  if (!character?.id && !errorDetailsMessage) return null;
+  const {
+    data: character,
+    error,
+    isFetching,
+    isSuccess,
+    isError,
+  } = useCharacterQuery(characterId);
+
+  const onRefresh = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ['character', characterId],
+    });
+  };
+
+  if (!characterId) return null;
 
   return (
     <div className="details-column">
-      <Button className="button close-btn" onClick={onCardClose}>
-        Close
-      </Button>
+      <div className="details-controls">
+        <Button className="button close-btn" onClick={onCardClose}>
+          Close
+        </Button>
+        <Button className="primary-button" onClick={onRefresh}>
+          {isFetching ? 'Refreshing...' : 'Refresh'}
+        </Button>
+      </div>
 
-      {errorDetailsMessage && (
-        <ErrorMessage className="error-message">
-          {errorDetailsMessage}
-        </ErrorMessage>
+      {isError && (
+        <ErrorMessage className="error-message">{error.message}</ErrorMessage>
       )}
 
-      {isDetailsLoading ? (
-        <Spinner />
-      ) : (
-        character?.id && (
-          <div className="details-card">
-            <img
-              src={character.image}
-              alt={character.name}
-              className="details-image"
-            />
-            <div className="details-content">
-              <h3>{character.name}</h3>
-              <p>
-                <strong>Status:</strong> {character.status}
-              </p>
-              <p>
-                <strong>Species:</strong> {character.species}
-              </p>
-              <p>
-                <strong>Gender:</strong> {character.gender}
-              </p>
-            </div>
+      {isFetching && <Spinner />}
+
+      {isSuccess && !isFetching && (
+        <div className="details-card">
+          <img
+            src={character.image}
+            alt={character.name}
+            className="details-image"
+          />
+          <div className="details-content">
+            <h3>{character.name}</h3>
+            <p>
+              <strong>Status:</strong> {character.status}
+            </p>
+            <p>
+              <strong>Species:</strong> {character.species}
+            </p>
+            <p>
+              <strong>Gender:</strong> {character.gender}
+            </p>
           </div>
-        )
+        </div>
       )}
     </div>
   );

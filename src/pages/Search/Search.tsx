@@ -1,30 +1,23 @@
-import { getCharacters, getSingleCharacter } from '@api/data.service';
 import { Button } from '@components/Button';
 import { ErrorMessage } from '@components/ErrorMessage';
 import { ResultsGrid } from '@components/ResultsGrid';
 import { TopControls } from '@components/TopControls';
-import type { Character, ResponseInfo } from '@interfaces/shared/types';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import useLocalStorage from '../../hooks/useLocalStorage';
 import { SEARCH_QUERY_KEY } from '../../constants/storage';
-import { APP_TITLE, DEFAULT_ERROR_MSG } from '../../constants/global';
+import { APP_TITLE } from '../../constants/global';
 import { Outlet, useSearchParams } from 'react-router';
 import { Pagination } from '@components/Pagination';
 import './Search.css';
 import { Spinner } from '@components/Spinner';
 import { FlyoutPanel } from '@components/FlyoutPanel';
+import { useCharactersQuery } from '../../hooks/useCharactersQuery';
+import { useQueryClient } from '@tanstack/react-query';
 
 const TEST_CRASH_APP_ERROR = 'I crashed!';
 
 export const Search = () => {
-  const [tasks, setTasks] = useState([] as Character[]);
-  const [infoData, setInfoData] = useState({} as ResponseInfo);
-  const [character, setCharacter] = useState({} as Character);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDetailsLoading, setIsDetailsLoading] = useState(false);
   const [shouldCrash, setShouldCrash] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [errorDetailsMessage, setErrorDetailsMessage] = useState('');
   const [storedQuery, setStoredQuery] = useLocalStorage<string>(
     SEARCH_QUERY_KEY,
     ''
@@ -35,6 +28,15 @@ export const Search = () => {
   const characterId = Number(searchParams.get('id')) || null;
   const searchQuery = storedQuery || '';
   const hasPageParam = searchParams.has('page');
+  const queryClient = useQueryClient();
+
+  const {
+    data: charactersData,
+    error,
+    isFetching,
+    isSuccess,
+    isError,
+  } = useCharactersQuery(currentPage, searchQuery);
 
   useEffect(() => {
     if (!hasPageParam) {
@@ -43,87 +45,6 @@ export const Search = () => {
       setSearchParams(nextParams, { replace: true });
     }
   }, [hasPageParam, setSearchParams]);
-
-  const loadData = useCallback(
-    async (page: number, query: string, signal?: AbortSignal) => {
-      setIsLoading(true);
-
-      try {
-        const tasks = await getCharacters(page, query, signal);
-        if (signal?.aborted) return;
-
-        setTasks(tasks.results);
-        setInfoData(tasks.info);
-        setErrorMessage('');
-      } catch (error: unknown) {
-        const message =
-          error instanceof Error ? error.message : DEFAULT_ERROR_MSG;
-        setErrorMessage(message);
-        setTasks([]);
-        setInfoData({} as ResponseInfo);
-      } finally {
-        if (!signal?.aborted) setIsLoading(false);
-      }
-    },
-    []
-  );
-
-  const loadSingleCharacter = useCallback(
-    async (id: number | null, signal?: AbortSignal) => {
-      setIsDetailsLoading(true);
-
-      if (!id) {
-        setCharacter({} as Character);
-        setErrorDetailsMessage('');
-        setIsDetailsLoading(false);
-        return;
-      }
-
-      try {
-        const data = await getSingleCharacter(id, signal);
-        if (signal?.aborted) return;
-
-        setCharacter(data);
-        setErrorDetailsMessage('');
-      } catch (error: unknown) {
-        setCharacter({} as Character);
-        const message =
-          error instanceof Error ? error.message : DEFAULT_ERROR_MSG;
-        setErrorDetailsMessage(message);
-      } finally {
-        if (!signal?.aborted) setIsDetailsLoading(false);
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchData = async () => {
-      await loadData(currentPage, searchQuery, controller.signal);
-    };
-
-    fetchData();
-
-    return () => {
-      controller.abort();
-    };
-  }, [currentPage, loadData, searchQuery]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchCharacter = async () => {
-      await loadSingleCharacter(characterId, controller.signal);
-    };
-
-    fetchCharacter();
-
-    return () => {
-      controller.abort();
-    };
-  }, [characterId, loadSingleCharacter]);
 
   const onSearch = async (query: string) => {
     const newQuery = query.trim();
@@ -166,6 +87,12 @@ export const Search = () => {
     }
   };
 
+  const onRefresh = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ['characters', currentPage, searchQuery],
+    });
+  };
+
   if (shouldCrash) {
     throw new Error(TEST_CRASH_APP_ERROR);
   }
@@ -175,38 +102,40 @@ export const Search = () => {
       <h1>{APP_TITLE}</h1>
 
       <TopControls onSearch={onSearch} initialValue={searchQuery} />
+      <Button className="primary-button" onClick={onRefresh}>
+        {isFetching ? 'Refreshing...' : 'Refresh'}
+      </Button>
 
       <div className="content-columns">
         <div className="main-column" onClick={onMainPanelClick}>
-          {errorMessage && (
+          {isError && (
             <ErrorMessage className="error-message">
-              {errorMessage}
+              {error.message}
             </ErrorMessage>
           )}
-
-          {isLoading ? (
-            <Spinner />
-          ) : (
-            <ResultsGrid searchResults={tasks} onCardClick={onCardClick} />
+          {isFetching && <Spinner />}
+          {isSuccess && !isFetching && (
+            <ResultsGrid
+              searchResults={charactersData?.results}
+              onCardClick={onCardClick}
+            />
           )}
-
-          {!isLoading && (
+          {isSuccess && !isFetching && (
             <Pagination
-              infoData={infoData}
+              infoData={charactersData?.info}
               onPageChange={onPageChange}
               currentPage={currentPage}
             />
           )}
         </div>
-
-        <Outlet
-          context={{
-            character,
-            isDetailsLoading,
-            onCardClose,
-            errorDetailsMessage,
-          }}
-        />
+        {characterId && (
+          <Outlet
+            context={{
+              characterId,
+              onCardClose,
+            }}
+          />
+        )}
       </div>
       <FlyoutPanel />
 

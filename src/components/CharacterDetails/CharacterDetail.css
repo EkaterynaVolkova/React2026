@@ -15,6 +15,13 @@
   max-width: 400px;
 }
 
+.details-controls {
+  display: flex;
+  justify-content: space-around;
+  background-color: var(--color-white);
+  gap: 10px;
+}
+
 .button.close-btn {
   align-self: flex-start;
   padding: 8px 16px;

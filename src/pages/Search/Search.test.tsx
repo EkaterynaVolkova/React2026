@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Search } from './Search';
 vi.mock('@api/data.service', () => ({
   getCharacters: vi.fn(),
@@ -9,63 +9,80 @@ import { SEARCH_QUERY_KEY } from '../../constants/storage';
 import { getCharacters } from '@api/data.service';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { useGlobalStore } from '../../stores/useGlobalStore';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useCharactersQuery } from '../../hooks/useCharactersQuery';
+
+vi.mock('../../hooks/useCharactersQuery', () => ({
+  useCharactersQuery: vi.fn(),
+}));
 
 const emptyResponse = {
-  info: {
-    count: 0,
-    pages: 0,
-    next: null,
-    prev: null,
-  },
+  info: { count: 0, pages: 3, next: null, prev: null },
   results: [],
 };
 
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false } },
+});
+
+const renderComponent = (page = 1) => {
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[`/?page=${page}`]}>
+        <Routes>
+          <Route path="/" element={<Search />} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>
+  );
+};
+
 describe('Search Component Tests', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    window.localStorage.clear();
+    useGlobalStore.getState().reset();
+
+    vi.mocked(useCharactersQuery).mockReturnValue({
+      data: emptyResponse,
+      error: null,
+      isFetching: false,
+      isSuccess: true,
+      isError: false,
+    } as unknown as ReturnType<typeof useCharactersQuery>);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    window.localStorage.clear();
+  });
+
   describe('LocalStorage Integration', () => {
-    beforeEach(() => {
-      vi.clearAllMocks();
-      window.localStorage.clear();
-    });
-
-    afterEach(() => {
-      vi.restoreAllMocks();
-      window.localStorage.clear();
-    });
-
     it('Retrieves saved search term on component mount', async () => {
-      vi.mocked(getCharacters).mockResolvedValue(emptyResponse);
-
       const text = 'Rick';
       window.localStorage.setItem(SEARCH_QUERY_KEY, JSON.stringify(text));
 
-      render(
-        <MemoryRouter initialEntries={['/?page=1']}>
-          <Routes>
-            <Route path="/" element={<Search />} />
-          </Routes>
-        </MemoryRouter>
-      );
+      vi.mocked(useCharactersQuery).mockReturnValue({
+        data: emptyResponse,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        isError: false,
+      } as unknown as ReturnType<typeof useCharactersQuery>);
+
+      renderComponent();
 
       const input = await screen.findByPlaceholderText(/Search/i);
       expect(input).toHaveValue(text);
-      await waitFor(() => {
-        expect(getCharacters).toHaveBeenCalled();
-      });
+      expect(useCharactersQuery).toHaveBeenCalled();
     });
 
     it('Overwrites existing localStorage value when new search is performed', async () => {
-      vi.mocked(getCharacters).mockResolvedValue(emptyResponse);
-
       const user = userEvent.setup();
       const text = 'Morty';
 
-      render(
-        <MemoryRouter initialEntries={['/?page=1']}>
-          <Routes>
-            <Route path="/" element={<Search />} />
-          </Routes>
-        </MemoryRouter>
-      );
+      renderComponent();
 
       const input = screen.getByPlaceholderText(/Search/i);
       const button = screen.getByRole('button', { name: 'Search' });
@@ -79,26 +96,17 @@ describe('Search Component Tests', () => {
   });
 
   describe('API Integration Tests', () => {
-    beforeEach(() => {
-      vi.clearAllMocks();
-      window.localStorage.clear();
-    });
-
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
     it('Handles API error responses', async () => {
       const errorMsg = 'Server is down';
-      vi.mocked(getCharacters).mockRejectedValue(new Error(errorMsg));
+      vi.mocked(useCharactersQuery).mockReturnValue({
+        data: undefined,
+        error: new Error(errorMsg),
+        isFetching: false,
+        isSuccess: false,
+        isError: true,
+      } as unknown as ReturnType<typeof useCharactersQuery>);
 
-      render(
-        <MemoryRouter initialEntries={['/?page=1']}>
-          <Routes>
-            <Route path="/" element={<Search />} />
-          </Routes>
-        </MemoryRouter>
-      );
+      renderComponent();
 
       expect(
         await screen.findByText(new RegExp(errorMsg, 'i'))
@@ -106,43 +114,27 @@ describe('Search Component Tests', () => {
     });
 
     it('Handles successful API responses', async () => {
-      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
+      vi.mocked(useCharactersQuery).mockReturnValue({
+        data: searchResultsJSON,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        isError: false,
+      } as unknown as ReturnType<typeof useCharactersQuery>);
 
-      render(
-        <MemoryRouter initialEntries={['/?page=1']}>
-          <Routes>
-            <Route path="/" element={<Search />} />
-          </Routes>
-        </MemoryRouter>
-      );
+      renderComponent();
 
       const items = await screen.findAllByTestId('character-card');
       expect(items).toHaveLength(searchResultsJSON.results.length);
     });
 
     it('Calls API with correct parameters', async () => {
-      vi.mocked(getCharacters).mockResolvedValue(emptyResponse);
       const text = 'Rick';
       window.localStorage.setItem(SEARCH_QUERY_KEY, JSON.stringify(text));
 
-      render(
-        <MemoryRouter initialEntries={['/?page=1']}>
-          <Routes>
-            <Route path="/" element={<Search />} />
-          </Routes>
-        </MemoryRouter>
-      );
+      renderComponent();
 
-      await waitFor(
-        () => {
-          expect(getCharacters).toHaveBeenCalledWith(
-            1,
-            text,
-            expect.any(AbortSignal)
-          );
-        },
-        { timeout: 2000 }
-      );
+      expect(useCharactersQuery).toHaveBeenCalledWith(1, text);
     });
 
     it('Calls API only once if search text is not changed', async () => {
@@ -150,20 +142,9 @@ describe('Search Component Tests', () => {
       const text = 'Rick';
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter initialEntries={['/?page=1']}>
-          <Routes>
-            <Route path="/" element={<Search />} />
-          </Routes>
-        </MemoryRouter>
-      );
+      renderComponent();
 
-      await waitFor(
-        () => {
-          expect(getCharacters).toHaveBeenCalledTimes(1);
-        },
-        { timeout: 2000 }
-      );
+      expect(useCharactersQuery).toHaveBeenCalledWith(1, '');
 
       const input = screen.getByPlaceholderText(/Search/i);
       const button = screen.getByRole('button', { name: 'Search' });
@@ -172,23 +153,25 @@ describe('Search Component Tests', () => {
       await user.click(button);
       await user.click(button);
 
-      await waitFor(
-        () => {
-          expect(getCharacters).toHaveBeenCalledTimes(2);
-        },
-        { timeout: 2000 }
-      );
+      expect(useCharactersQuery).toHaveBeenCalledWith(1, text);
+
+      const calls = vi.mocked(useCharactersQuery).mock.calls;
+      const uniqueCalls = calls.map(([page, query]) => `${page}-${query}`);
+      const uniqueSets = new Set(uniqueCalls);
+      expect(uniqueSets.size).toBe(2);
     });
 
     it('Handles unexpected error types', async () => {
-      vi.mocked(getCharacters).mockRejectedValue(null);
-      render(
-        <MemoryRouter initialEntries={['/?page=1']}>
-          <Routes>
-            <Route path="/" element={<Search />} />
-          </Routes>
-        </MemoryRouter>
-      );
+      vi.mocked(useCharactersQuery).mockReturnValue({
+        data: undefined,
+        error: new Error('Something went wrong'),
+        isFetching: false,
+        isSuccess: false,
+        isError: true,
+      } as unknown as ReturnType<typeof useCharactersQuery>);
+
+      renderComponent();
+
       const errorText = await screen.findByText(/something went wrong/i);
       expect(errorText).toBeInTheDocument();
     });
@@ -196,87 +179,52 @@ describe('Search Component Tests', () => {
 
   describe('Rendering Tests', () => {
     beforeEach(() => {
-      vi.clearAllMocks();
-      window.localStorage.clear();
-      useGlobalStore.getState().reset();
+      vi.mocked(useCharactersQuery).mockReturnValue({
+        data: searchResultsJSON,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        isError: false,
+      } as unknown as ReturnType<typeof useCharactersQuery>);
     });
 
     it('Handles page change when pagination button is clicked', async () => {
-      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
       const user = userEvent.setup();
-
-      render(
-        <MemoryRouter initialEntries={['/?page=1']}>
-          <Routes>
-            <Route path="/" element={<Search />} />
-          </Routes>
-        </MemoryRouter>
-      );
+      renderComponent();
 
       const page2Button = await screen.findByRole('button', { name: '2' });
       await user.click(page2Button);
-      expect(getCharacters).toHaveBeenCalledWith(
-        2,
-        '',
-        expect.any(AbortSignal)
-      );
+
+      expect(useCharactersQuery).toHaveBeenCalledWith(2, '');
     });
 
     it('Handles last page change when » button is clicked', async () => {
-      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
       const user = userEvent.setup();
-
-      render(
-        <MemoryRouter initialEntries={['/?page=1']}>
-          <Routes>
-            <Route path="/" element={<Search />} />
-          </Routes>
-        </MemoryRouter>
-      );
+      renderComponent();
 
       const lastPageButton = await screen.findByRole('button', { name: '»' });
       await user.click(lastPageButton);
 
-      expect(getCharacters).toHaveBeenCalledWith(
+      expect(useCharactersQuery).toHaveBeenCalledWith(
         searchResultsJSON.info.pages,
-        '',
-        expect.any(AbortSignal)
+        ''
       );
     });
 
     it('Handles previous page change when ‹ button is clicked', async () => {
-      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
       const user = userEvent.setup();
-
-      render(
-        <MemoryRouter initialEntries={['/?page=3']}>
-          <Routes>
-            <Route path="/" element={<Search />} />
-          </Routes>
-        </MemoryRouter>
-      );
+      renderComponent(3);
 
       const prevPageButton = await screen.findByRole('button', { name: '‹' });
       await user.click(prevPageButton);
 
-      expect(getCharacters).toHaveBeenCalledWith(
-        2,
-        '',
-        expect.any(AbortSignal)
-      );
+      expect(useCharactersQuery).toHaveBeenCalledWith(2, '');
     });
 
     it('FlyoutPanel component is visible when selected item', async () => {
-      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
       const user = userEvent.setup();
 
-      render(
-        <MemoryRouter initialEntries={['/']}>
-          <Routes>
-            <Route path="/" element={<Search />} />
-          </Routes>
-        </MemoryRouter>
-      );
+      renderComponent();
 
       const checkbox = await screen.findAllByRole('checkbox');
       await user.click(checkbox[0]);
@@ -287,18 +235,67 @@ describe('Search Component Tests', () => {
     });
 
     it('FlyoutPanel component is not visible when no selected item', async () => {
-      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
-
-      render(
-        <MemoryRouter initialEntries={['/']}>
-          <Routes>
-            <Route path="/" element={<Search />} />
-          </Routes>
-        </MemoryRouter>
-      );
+      renderComponent();
 
       const flyoutText = screen.queryByText(/Number of Selected Items/i);
       expect(flyoutText).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Querying Coverage', () => {
+    it('Displays a Spinner while querying characters data', () => {
+      vi.mocked(useCharactersQuery).mockReturnValue({
+        data: undefined,
+        error: null,
+        isFetching: true,
+        isSuccess: false,
+        isError: false,
+      } as unknown as ReturnType<typeof useCharactersQuery>);
+
+      renderComponent();
+
+      expect(screen.getByTestId('spinner')).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Refreshing...' })
+      ).toBeInTheDocument();
+    });
+
+    it('Displays error message on failure', () => {
+      const mockErrorText = 'Failed to fetch characters from server';
+
+      vi.mocked(useCharactersQuery).mockReturnValue({
+        data: undefined,
+        error: new Error(mockErrorText),
+        isFetching: false,
+        isSuccess: false,
+        isError: true,
+      } as unknown as ReturnType<typeof useCharactersQuery>);
+
+      renderComponent();
+
+      expect(screen.getByText(mockErrorText)).toBeInTheDocument();
+    });
+
+    it('Triggers query invalidation on Refresh button click', async () => {
+      const user = userEvent.setup();
+      const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+      vi.mocked(useCharactersQuery).mockReturnValue({
+        data: searchResultsJSON,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        isError: false,
+      } as unknown as ReturnType<typeof useCharactersQuery>);
+
+      renderComponent();
+
+      const refreshButton = screen.getByRole('button', { name: 'Refresh' });
+      await user.click(refreshButton);
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ['characters', 1, ''],
+      });
     });
   });
 });

@@ -30,6 +30,8 @@ export const CharacterDetails = () => {
     });
   };
 
+  if (!characterId) return null;
+
   return (
     <div className="details-column">
       <div className="details-controls">

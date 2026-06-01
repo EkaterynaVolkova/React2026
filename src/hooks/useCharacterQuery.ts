@@ -5,5 +5,6 @@ export const useCharacterQuery = (id: number) => {
   return useQuery({
     queryKey: ['character', id],
     queryFn: async ({ signal }) => getSingleCharacter(id, signal),
+    enabled: Boolean(id),
   });
 };

@@ -24,11 +24,9 @@ export const CharacterDetails = () => {
     isError,
   } = useCharacterQuery(characterId);
 
-  if (!character?.id) return null;
-
   const onRefresh = async () => {
     await queryClient.invalidateQueries({
-      queryKey: ['character', character?.id],
+      queryKey: ['character', characterId],
     });
   };
 
@@ -39,7 +37,7 @@ export const CharacterDetails = () => {
           Close
         </Button>
         <Button className="primary-button" onClick={onRefresh}>
-          Refresh
+          {isFetching ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
 
@@ -49,7 +47,7 @@ export const CharacterDetails = () => {
 
       {isFetching && <Spinner />}
 
-      {isSuccess && (
+      {isSuccess && !isFetching && (
         <div className="details-card">
           <img
             src={character.image}

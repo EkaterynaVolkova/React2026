@@ -103,7 +103,7 @@ export const Search = () => {
 
       <TopControls onSearch={onSearch} initialValue={searchQuery} />
       <Button className="primary-button" onClick={onRefresh}>
-        Refresh
+        {isFetching ? 'Refreshing...' : 'Refresh'}
       </Button>
 
       <div className="content-columns">
@@ -114,13 +114,13 @@ export const Search = () => {
             </ErrorMessage>
           )}
           {isFetching && <Spinner />}
-          {isSuccess && (
+          {isSuccess && !isFetching && (
             <ResultsGrid
               searchResults={charactersData?.results}
               onCardClick={onCardClick}
             />
           )}
-          {isSuccess && (
+          {isSuccess && !isFetching && (
             <Pagination
               infoData={charactersData?.info}
               onPageChange={onPageChange}

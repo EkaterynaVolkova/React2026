@@ -13,6 +13,8 @@ export async function getCharacters(
 
   try {
     const response = await fetch(url, { signal });
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     if (!response.ok) {
       const errorText = await response.json();
       throw new Error(errorText.error || response.statusText);
@@ -40,7 +42,10 @@ export async function getSingleCharacter(
 
   try {
     const response = await fetch(url, { signal });
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     if (!response.ok) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
       const errorText = await response.json();
       throw new Error(errorText.error || response.statusText);
     }

@@ -1,0 +1,19 @@
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.primary-btn {
+  background-color: aliceblue;
+  color: cadetblue;
+  outline: 2px solid cadetblue;
+  font-size: 1rem;
+}
+
+.primary-btn:hover {
+  background-color: cadetblue;
+  color: aliceblue;
+}

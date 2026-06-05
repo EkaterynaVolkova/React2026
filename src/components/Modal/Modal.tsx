@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import './Modal.css';
 import { Button } from '../Button';
@@ -6,20 +6,30 @@ import { Button } from '../Button';
 interface ModalProps {
   children?: ReactNode;
   isOpen?: boolean;
-  handleClose?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  handleClose: () => void;
 }
 
 export const Modal = ({ children, isOpen, handleClose }: ModalProps) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const closeOnEscapeKey = (e: KeyboardEvent) =>
+      e.key === 'Escape' ? handleClose() : null;
+    document.body.addEventListener('keydown', closeOnEscapeKey);
+    return () => {
+      document.body.removeEventListener('keydown', closeOnEscapeKey);
+    };
+  }, [handleClose]);
+
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="modal">
+    <div className="modal" onClick={handleClose}>
       <div className="modal-controls">
-        <Button onClick={handleClose} className="">
-          Close
-        </Button>
+        <Button onClick={handleClose}>Close</Button>
       </div>
-      <div className="modal-content">{children}</div>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        {children}
+      </div>
     </div>,
     document.body
   );

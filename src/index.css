@@ -81,3 +81,11 @@ input[type='checkbox'] {
   margin: 5px;
   cursor: pointer;
 }
+
+.err-msg {
+  color: #ef4444;
+  font-weight: 500;
+  line-height: 1;
+  font-size: 1rem;
+  animation: fadeIn 0.2s ease-in-out;
+}

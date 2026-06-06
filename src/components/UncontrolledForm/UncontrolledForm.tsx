@@ -1,28 +1,42 @@
+import { useState } from 'react';
+import { formSchema } from '../../schemas/formSchema';
+
 export const UncontrolledForm = () => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const onSubmit = (event: React.SubmitEvent) => {
     event.preventDefault();
-    //    const results = myFormSchema.safeParse(formValues)
-    // if (results.success) {
-    //   results.data
-    //   console.log(results.data.email)
-    // } else {
-    //    results.errors
-    // }
+
+    const formData = new FormData(event.target);
+    const rawData = Object.fromEntries(formData);
+    const results = formSchema.safeParse(rawData);
+    if (results.success) {
+      console.log(results.data);
+    } else {
+      const formattedErrors: Record<string, string> = {};
+      results.error.issues.forEach((issue) => {
+        formattedErrors[issue.path[0].toString()] = issue.message;
+      });
+      setErrors(formattedErrors);
+    }
   };
 
   return (
     <form onSubmit={onSubmit}>
       <div className="form-field">
         <label htmlFor="u-name">Name:</label>
-        <input id="u-name" type="text" />
+        <input id="u-name" type="text" name="name" />
+        {errors.name && <div className="err-msg">{errors.name}</div>}
       </div>
       <div className="form-field">
         <label htmlFor="u-age">Age:</label>
         <input type="number" id="u-age" name="age" />
+        {errors.age && <div className="err-msg">{errors.age}</div>}
       </div>
       <div className="form-field">
         <label htmlFor="u-email">Email:</label>
-        <input type="email" id="u-email" name="email" />
+        <input type="text" id="u-email" name="email" />
+        {errors.email && <div className="err-msg">{errors.email}</div>}
       </div>
       <div className="form-field">
         <p>Gender:</p>
@@ -34,10 +48,12 @@ export const UncontrolledForm = () => {
           <input type="radio" id="u-gender-woman" name="gender" value="woman" />
           <label htmlFor="u-gender-woman">Woman</label>
         </div>
+        {errors.gender && <div className="err-msg">{errors.gender}</div>}
       </div>
       <div className="form-field">
         <input type="checkbox" id="u-terms" name="terms" />
         <label htmlFor="u-terms">Accept Terms & Conditions</label>
+        {errors.terms && <div className="err-msg">{errors.terms}</div>}
       </div>
       <input type="submit" value="Submit" className="button primary-btn" />
     </form>

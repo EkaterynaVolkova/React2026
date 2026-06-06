@@ -3,6 +3,8 @@ import { Header } from './components/Header';
 import { Main } from './components/Main';
 import { Modal } from './components/Modal/Modal';
 import { REACT_HOOK_FORM, UNCONTROLLED_FORM } from './constants/global';
+import { UncontrolledForm } from './components/UncontrolledForm';
+import { ReactHookForm } from './components/ReactHookForm';
 
 function App() {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,9 +22,9 @@ function App() {
       <Header onOpenForm={handleOpenForm} />
       <Main />
       <Modal isOpen={isOpen} handleClose={handleModalClose}>
-        {formToOpen === UNCONTROLLED_FORM && <p>uncontrolled form!</p>}
+        {formToOpen === UNCONTROLLED_FORM && <UncontrolledForm />}
 
-        {formToOpen === REACT_HOOK_FORM && <p>React Hook form!</p>}
+        {formToOpen === REACT_HOOK_FORM && <ReactHookForm />}
       </Modal>
     </>
   );

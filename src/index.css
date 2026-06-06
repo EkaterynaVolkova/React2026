@@ -47,3 +47,37 @@ p {
   flex-direction: column;
   min-height: 100vh;
 }
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+input:focus,
+select:focus {
+  border-color: cadetblue;
+}
+
+input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+input[type='radio'],
+input[type='checkbox'] {
+  width: auto;
+  margin: 5px;
+  cursor: pointer;
+}

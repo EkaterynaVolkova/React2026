@@ -22,9 +22,13 @@ function App() {
       <Header onOpenForm={handleOpenForm} />
       <Main />
       <Modal isOpen={isOpen} handleClose={handleModalClose}>
-        {formToOpen === UNCONTROLLED_FORM && <UncontrolledForm />}
+        {formToOpen === UNCONTROLLED_FORM && (
+          <UncontrolledForm onSubmit={() => handleModalClose()} />
+        )}
 
-        {formToOpen === REACT_HOOK_FORM && <ReactHookForm />}
+        {formToOpen === REACT_HOOK_FORM && (
+          <ReactHookForm onSubmit={() => handleModalClose()} />
+        )}
       </Modal>
     </>
   );

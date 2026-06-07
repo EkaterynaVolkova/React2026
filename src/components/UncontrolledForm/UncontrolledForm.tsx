@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { formSchema } from '../../schemas/formSchema';
 
-export const UncontrolledForm = () => {
+interface UncontrolledFormProps {
+  onSubmit: () => void;
+}
+
+export const UncontrolledForm = ({ onSubmit }: UncontrolledFormProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const onSubmit = (event: React.SubmitEvent) => {
+  const saveData = (event: React.SubmitEvent) => {
     event.preventDefault();
 
     const formData = new FormData(event.target);
@@ -12,6 +16,7 @@ export const UncontrolledForm = () => {
     const results = formSchema.safeParse(rawData);
     if (results.success) {
       console.log(results.data);
+      onSubmit();
     } else {
       const formattedErrors: Record<string, string> = {};
       results.error.issues.forEach((issue) => {
@@ -22,7 +27,7 @@ export const UncontrolledForm = () => {
   };
 
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={saveData}>
       <div className="form-field">
         <label htmlFor="u-name">Name:</label>
         <input id="u-name" type="text" name="name" />

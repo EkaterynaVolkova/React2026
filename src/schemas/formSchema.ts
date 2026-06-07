@@ -53,7 +53,7 @@ export const formSchema = z.object({
     }),
   gender: z.string({ error: 'Choose one of the options' }),
   terms: z.preprocess(
-    (val) => val === 'on',
+    (val) => val === true || val === 'on',
     z.literal(true, {
       error: 'You must accept the terms',
     })

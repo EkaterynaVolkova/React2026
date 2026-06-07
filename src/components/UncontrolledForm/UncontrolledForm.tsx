@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { formSchema } from '../../schemas/formSchema';
 import { saveSubmission } from '../../store/useGlobalStore';
+import { UncontrolledPassword } from '../UncontrolledPassword/UncontrolledPassword';
 
 interface UncontrolledFormProps {
   onSubmit: () => void;
@@ -45,6 +46,7 @@ export const UncontrolledForm = ({ onSubmit }: UncontrolledFormProps) => {
         <input type="text" id="u-email" name="email" />
         {errors.email && <div className="err-msg">{errors.email}</div>}
       </div>
+      <UncontrolledPassword errors={errors} />
       <div className="form-field">
         <p>Gender:</p>
         <div>

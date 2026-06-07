@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import type { SubmissionForm, SubmissionFormInput } from '../../types/types';
 import { saveSubmission } from '../../store/useGlobalStore';
+import { getPasswordStrengthText } from '../../utils/passwordStrength';
 
 interface ReactHookFormProps {
   onSubmit: () => void;
@@ -14,6 +15,7 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitSuccessful },
   } = useForm<SubmissionFormInput, object, SubmissionForm>({
     resolver: zodResolver(formSchema),
@@ -24,6 +26,8 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
       email: '',
       gender: undefined,
       terms: false,
+      password: '',
+      confirmPassword: '',
     },
   });
 
@@ -38,6 +42,9 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
       reset();
     }
   }, [isSubmitSuccessful, reset]);
+
+  const passwordValue = watch('password', '');
+  const strengthText = getPasswordStrengthText(passwordValue);
 
   return (
     <form onSubmit={handleSubmit(saveData)}>
@@ -55,6 +62,27 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
         <label htmlFor="h-email">Email:</label>
         <input {...register('email')} type="text" id="h-email" />
         {errors.email && <div className="err-msg">{errors.email.message}</div>}
+      </div>
+      <div className="form-field">
+        <label htmlFor="h-password">Password:</label>
+        <input {...register('password')} id="h-password" type="password" />
+        {errors.password && (
+          <div className="err-msg">{errors.password.message}</div>
+        )}
+        <div className={`password-status ${strengthText.toLowerCase()}`}>
+          Password strength: <strong>{strengthText}</strong>
+        </div>
+      </div>
+      <div className="form-field">
+        <label htmlFor="h-confirm-password">Confirm Password:</label>
+        <input
+          {...register('confirmPassword')}
+          id="h-confirm-password"
+          type="password"
+        />
+        {errors.confirmPassword && (
+          <div className="err-msg">{errors.confirmPassword.message}</div>
+        )}
       </div>
       <div className="form-field">
         <p>Gender:</p>

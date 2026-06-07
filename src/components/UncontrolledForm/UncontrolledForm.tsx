@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { formSchema } from '../../schemas/formSchema';
+import { saveSubmission } from '../../store/useGlobalStore';
 
 interface UncontrolledFormProps {
   onSubmit: () => void;
@@ -16,6 +17,7 @@ export const UncontrolledForm = ({ onSubmit }: UncontrolledFormProps) => {
     const results = formSchema.safeParse(rawData);
     if (results.success) {
       console.log(results.data);
+      saveSubmission(results.data);
       onSubmit();
     } else {
       const formattedErrors: Record<string, string> = {};

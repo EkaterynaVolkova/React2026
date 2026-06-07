@@ -7,3 +7,8 @@ main {
   box-sizing: border-box;
   background-color: #fafafa;
 }
+
+.submissions-grid {
+  display: flex;
+  flex-wrap: wrap;
+}

@@ -1,10 +1,9 @@
-import type z from 'zod';
 import { formSchema } from '../../schemas/formSchema';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
-
-type SubmissionForm = z.input<typeof formSchema>;
+import type { SubmissionForm, SubmissionFormInput } from '../../types/types';
+import { saveSubmission } from '../../store/useGlobalStore';
 
 interface ReactHookFormProps {
   onSubmit: () => void;
@@ -16,7 +15,7 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitSuccessful },
-  } = useForm<SubmissionForm>({
+  } = useForm<SubmissionFormInput, object, SubmissionForm>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: {
@@ -30,6 +29,7 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
 
   const saveData: SubmitHandler<SubmissionForm> = (data) => {
     console.log(data);
+    saveSubmission(data);
     onSubmit();
   };
 
@@ -40,7 +40,7 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
   }, [isSubmitSuccessful, reset]);
 
   return (
-    <form onSubmit={handleSubmit((data) => saveData(data))}>
+    <form onSubmit={handleSubmit(saveData)}>
       <div className="form-field">
         <label htmlFor="h-name">Name:</label>
         <input {...register('name')} id="h-name" type="text" />

@@ -23,7 +23,7 @@ export const Modal = ({ children, isOpen, handleClose }: ModalProps) => {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="modal" onClick={handleClose}>
+    <div className="modal" onClick={handleClose} data-testid="modal">
       <div className="modal-controls">
         <Button onClick={handleClose}>Close</Button>
       </div>

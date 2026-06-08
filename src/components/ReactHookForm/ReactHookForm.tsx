@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import type { SubmissionForm, SubmissionFormInput } from '../../types/types';
 import { saveSubmission, useCountries } from '../../store/useGlobalStore';
 import { getPasswordStrengthText } from '../../utils/passwordStrength';
+import { convertFileToBase64 } from '../../utils/fileConverter';
 
 interface ReactHookFormProps {
   onSubmit: () => void;
@@ -16,8 +17,8 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
     handleSubmit,
     reset,
     watch,
-    formState: { errors, isSubmitSuccessful },
-  } = useForm<SubmissionFormInput, object, SubmissionForm>({
+    formState: { errors, isSubmitSuccessful, isValid },
+  } = useForm<SubmissionFormInput>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: {
@@ -28,13 +29,37 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
       terms: false,
       password: '',
       confirmPassword: '',
+      country: '',
+      image: undefined,
     },
   });
   const countries = useCountries();
+  let finalData: SubmissionForm;
 
-  const saveData: SubmitHandler<SubmissionForm> = (data) => {
-    saveSubmission(data);
-    onSubmit();
+  const saveData: SubmitHandler<SubmissionFormInput> = async (data) => {
+    try {
+      const file = data.image as File;
+      if (!file) return;
+
+      const base64String = await convertFileToBase64(file);
+      finalData = {
+        ...data,
+        age: Number(data.age),
+        terms: true as const,
+        image: base64String,
+      };
+    } catch (error) {
+      console.error('Failed to convert image', error);
+      finalData = {
+        ...data,
+        age: Number(data.age),
+        terms: true as const,
+        image: '',
+      };
+    } finally {
+      saveSubmission(finalData);
+      onSubmit();
+    }
   };
 
   useEffect(() => {
@@ -53,16 +78,19 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
         <input {...register('name')} id="h-name" type="text" />
         {errors.name && <div className="err-msg">{errors.name.message}</div>}
       </div>
+
       <div className="form-field">
         <label htmlFor="h-age">Age:</label>
         <input {...register('age')} type="number" id="h-age" />
         {errors.age && <div className="err-msg">{errors.age.message}</div>}
       </div>
+
       <div className="form-field">
         <label htmlFor="h-email">Email:</label>
         <input {...register('email')} type="text" id="h-email" />
         {errors.email && <div className="err-msg">{errors.email.message}</div>}
       </div>
+
       <div className="form-field">
         <label htmlFor="h-password">Password:</label>
         <input {...register('password')} id="h-password" type="password" />
@@ -73,6 +101,7 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
           Password strength: <strong>{strengthText}</strong>
         </div>
       </div>
+
       <div className="form-field">
         <label htmlFor="h-confirm-password">Confirm Password:</label>
         <input
@@ -84,6 +113,7 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
           <div className="err-msg">{errors.confirmPassword.message}</div>
         )}
       </div>
+
       <div className="form-field">
         <p>Gender:</p>
         <div>
@@ -108,6 +138,7 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
           <div className="err-msg">{errors.gender.message}</div>
         )}
       </div>
+
       <div className="form-field">
         <label htmlFor="h-country">Country:</label>
         <input
@@ -120,7 +151,6 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
         {errors.country && (
           <div className="err-msg">{errors.country.message}</div>
         )}
-
         <datalist id="hook-form-countries-list">
           {countries.map((country) => (
             <option key={country} value={country} />
@@ -129,11 +159,28 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
       </div>
 
       <div className="form-field">
+        <label htmlFor="h-image">Profile Picture:</label>
+        <input
+          {...register('image')}
+          id="h-image"
+          type="file"
+          accept="image/png, image/jpeg, image/jpg"
+        />
+        {errors.image && <div className="err-msg">{errors.image.message}</div>}
+      </div>
+
+      <div className="form-field">
         <input {...register('terms')} type="checkbox" id="h-terms" />
         <label htmlFor="h-terms">Accept Terms & Conditions</label>
         {errors.terms && <div className="err-msg">{errors.terms.message}</div>}
       </div>
-      <input type="submit" value="Submit" className="button primary-btn" />
+
+      <input
+        type="submit"
+        value="Submit"
+        className="button primary-btn"
+        disabled={!isValid}
+      />
     </form>
   );
 };

@@ -10,6 +10,12 @@
   animation: highlightAnimation 3s ease-in-out 1;
 }
 
+.card-avatar {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+}
+
 @keyframes highlightAnimation {
   0% {
     border-color: cadetblue;

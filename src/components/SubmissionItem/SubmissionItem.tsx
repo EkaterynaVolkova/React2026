@@ -16,6 +16,15 @@ export const SubmissionItem = ({
     <div className={classes}>
       <div className="card-info">
         <h3>{data.name}</h3>
+        {data.image && (
+          <div>
+            <img
+              src={data.image}
+              alt={`${data.name}`}
+              className="card-avatar"
+            />
+          </div>
+        )}
         <p>
           <strong>Age:</strong> {data.age}
         </p>
@@ -30,6 +39,9 @@ export const SubmissionItem = ({
         </p>
         <p>
           <strong>Gender:</strong> {data.gender}
+        </p>
+        <p>
+          <strong>Country:</strong> {data.country}
         </p>
         <p>
           <strong>{data.terms ? 'Accepted Terms' : 'Terms Declined'}</strong>

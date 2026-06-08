@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { formSchema } from '../../schemas/formSchema';
 import { saveSubmission, useCountries } from '../../store/useGlobalStore';
 import { UncontrolledPassword } from '../UncontrolledPassword/UncontrolledPassword';
+import { convertFileToBase64 } from '../../utils/fileConverter';
+import type { SubmissionForm } from '../../types/types';
 
 interface UncontrolledFormProps {
   onSubmit: () => void;
@@ -11,15 +13,27 @@ export const UncontrolledForm = ({ onSubmit }: UncontrolledFormProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const countries = useCountries();
 
-  const saveData = (event: React.SubmitEvent) => {
+  const saveData = async (event: React.SubmitEvent) => {
     event.preventDefault();
 
     const formData = new FormData(event.target);
     const rawData = Object.fromEntries(formData);
     const results = formSchema.safeParse(rawData);
+
+    const file = formData.get('image') as File;
+    if (file && file.size === 0) {
+      delete rawData.image;
+    }
+
     if (results.success) {
-      console.log(results.data);
-      saveSubmission(results.data);
+      setErrors({});
+      const validatedFile = results.data.image;
+      const base64String = await convertFileToBase64(validatedFile);
+      const finalData: SubmissionForm = {
+        ...results.data,
+        image: base64String,
+      };
+      saveSubmission(finalData);
       onSubmit();
     } else {
       const formattedErrors: Record<string, string> = {};
@@ -37,17 +51,21 @@ export const UncontrolledForm = ({ onSubmit }: UncontrolledFormProps) => {
         <input id="u-name" type="text" name="name" />
         {errors.name && <div className="err-msg">{errors.name}</div>}
       </div>
+
       <div className="form-field">
         <label htmlFor="u-age">Age:</label>
         <input type="number" id="u-age" name="age" />
         {errors.age && <div className="err-msg">{errors.age}</div>}
       </div>
+
       <div className="form-field">
         <label htmlFor="u-email">Email:</label>
         <input type="text" id="u-email" name="email" />
         {errors.email && <div className="err-msg">{errors.email}</div>}
       </div>
+
       <UncontrolledPassword errors={errors} />
+
       <div className="form-field">
         <p>Gender:</p>
         <div>
@@ -60,6 +78,7 @@ export const UncontrolledForm = ({ onSubmit }: UncontrolledFormProps) => {
         </div>
         {errors.gender && <div className="err-msg">{errors.gender}</div>}
       </div>
+
       <div className="form-field">
         <label htmlFor="u-country">Country:</label>
         <input
@@ -76,11 +95,24 @@ export const UncontrolledForm = ({ onSubmit }: UncontrolledFormProps) => {
           ))}
         </datalist>
       </div>
+
+      <div className="form-field">
+        <label htmlFor="u-image">Profile Picture:</label>
+        <input
+          id="u-image"
+          type="file"
+          accept="image/png, image/jpeg, image/jpg"
+          name="image"
+        />
+        {errors.image && <div className="err-msg">{errors.image}</div>}
+      </div>
+
       <div className="form-field">
         <input type="checkbox" id="u-terms" name="terms" />
         <label htmlFor="u-terms">Accept Terms & Conditions</label>
         {errors.terms && <div className="err-msg">{errors.terms}</div>}
       </div>
+
       <input type="submit" value="Submit" className="button primary-btn" />
     </form>
   );

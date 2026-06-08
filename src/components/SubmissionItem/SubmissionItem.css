@@ -1,0 +1,32 @@
+.card {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 16px;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.card.new {
+  animation: highlightAnimation 3s ease-in-out 1;
+}
+
+.card-avatar {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+}
+
+@keyframes highlightAnimation {
+  0% {
+    border-color: cadetblue;
+    background-color: rgba(95, 158, 160, 0.15);
+  }
+  70% {
+    border-color: cadetblue;
+    background-color: rgba(95, 158, 160, 0.15);
+  }
+  100% {
+    border-color: #ccc;
+    background-color: #fff;
+  }
+}

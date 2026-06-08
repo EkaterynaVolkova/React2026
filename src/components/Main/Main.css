@@ -1,0 +1,14 @@
+main {
+  flex: 1;
+  padding: 20px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  background-color: #fafafa;
+}
+
+.submissions-grid {
+  display: flex;
+  flex-wrap: wrap;
+}

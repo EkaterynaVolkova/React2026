@@ -23,6 +23,12 @@ export const SubmissionItem = ({
           <strong>Email:</strong> {data.email}
         </p>
         <p>
+          <strong>Password:</strong> {data.password}
+        </p>
+        <p>
+          <strong>Confirm password:</strong> {data.confirmPassword}
+        </p>
+        <p>
           <strong>Gender:</strong> {data.gender}
         </p>
         <p>

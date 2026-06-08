@@ -1,4 +1,5 @@
 import * as z from 'zod';
+import { useGlobalStore } from '../store/useGlobalStore';
 
 export const formSchema = z
   .object({
@@ -61,6 +62,16 @@ export const formSchema = z
     ),
     password: z.string().min(1, 'Password is required'),
     confirmPassword: z.string().min(1, 'Please confirm your password'),
+    country: z
+      .string()
+      .min(1, 'Country is required')
+      .refine(
+        (val): boolean => {
+          const availableCountries = useGlobalStore.getState().countries;
+          return availableCountries.includes(val);
+        },
+        { message: 'Chosen country must exist in the stored countries list' }
+      ),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ['confirmPassword'],

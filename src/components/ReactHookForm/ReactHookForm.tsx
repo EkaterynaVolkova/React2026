@@ -3,7 +3,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import type { SubmissionForm, SubmissionFormInput } from '../../types/types';
-import { saveSubmission } from '../../store/useGlobalStore';
+import { saveSubmission, useCountries } from '../../store/useGlobalStore';
 import { getPasswordStrengthText } from '../../utils/passwordStrength';
 
 interface ReactHookFormProps {
@@ -30,9 +30,9 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
       confirmPassword: '',
     },
   });
+  const countries = useCountries();
 
   const saveData: SubmitHandler<SubmissionForm> = (data) => {
-    console.log(data);
     saveSubmission(data);
     onSubmit();
   };
@@ -108,6 +108,26 @@ export const ReactHookForm = ({ onSubmit }: ReactHookFormProps) => {
           <div className="err-msg">{errors.gender.message}</div>
         )}
       </div>
+      <div className="form-field">
+        <label htmlFor="h-country">Country:</label>
+        <input
+          {...register('country')}
+          id="h-country"
+          type="text"
+          list="hook-form-countries-list"
+          placeholder="Choose country..."
+        />
+        {errors.country && (
+          <div className="err-msg">{errors.country.message}</div>
+        )}
+
+        <datalist id="hook-form-countries-list">
+          {countries.map((country) => (
+            <option key={country} value={country} />
+          ))}
+        </datalist>
+      </div>
+
       <div className="form-field">
         <input {...register('terms')} type="checkbox" id="h-terms" />
         <label htmlFor="h-terms">Accept Terms & Conditions</label>

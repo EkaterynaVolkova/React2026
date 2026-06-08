@@ -1,5 +1,6 @@
 import type { SubmissionForm } from '../../types/types';
 import { type StateCreator } from 'zustand';
+import type { StoreState } from '../useGlobalStore';
 
 interface SubmissionsSliceState {
   submissions: SubmissionForm[];
@@ -16,7 +17,7 @@ export const initialSubmissionsState: SubmissionsSliceState = {
 };
 
 export const submissionsSlice: StateCreator<
-  SubmissionsSlice,
+  StoreState,
   [],
   [],
   SubmissionsSlice

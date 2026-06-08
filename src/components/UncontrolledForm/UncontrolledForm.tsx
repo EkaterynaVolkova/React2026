@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formSchema } from '../../schemas/formSchema';
-import { saveSubmission } from '../../store/useGlobalStore';
+import { saveSubmission, useCountries } from '../../store/useGlobalStore';
 import { UncontrolledPassword } from '../UncontrolledPassword/UncontrolledPassword';
 
 interface UncontrolledFormProps {
@@ -9,6 +9,7 @@ interface UncontrolledFormProps {
 
 export const UncontrolledForm = ({ onSubmit }: UncontrolledFormProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const countries = useCountries();
 
   const saveData = (event: React.SubmitEvent) => {
     event.preventDefault();
@@ -58,6 +59,22 @@ export const UncontrolledForm = ({ onSubmit }: UncontrolledFormProps) => {
           <label htmlFor="u-gender-woman">Woman</label>
         </div>
         {errors.gender && <div className="err-msg">{errors.gender}</div>}
+      </div>
+      <div className="form-field">
+        <label htmlFor="u-country">Country:</label>
+        <input
+          id="u-country"
+          type="text"
+          name="country"
+          list="uncontrolled-countries-list"
+          placeholder="Choose country..."
+        />
+        {errors.country && <div className="err-msg">{errors.country}</div>}
+        <datalist id="uncontrolled-countries-list">
+          {countries.map((country) => (
+            <option key={country} value={country} />
+          ))}
+        </datalist>
       </div>
       <div className="form-field">
         <input type="checkbox" id="u-terms" name="terms" />

@@ -83,3 +83,47 @@ describe('Controlled Form Component', () => {
     });
   });
 });
+
+describe('Successful Submission', () => {
+  it('Submits valid form data and updates store', async () => {
+    const user = userEvent.setup();
+    const mockOnSubmit = vi.fn();
+
+    render(<ReactHookForm onSubmit={mockOnSubmit} />);
+
+    const nameInput = screen.getByLabelText(/name/i);
+    const ageInput = screen.getByLabelText(/age/i);
+    const emailInput = screen.getByLabelText(/email/i);
+    const countrySelect = screen.getByLabelText(/country/i);
+    const passwordInput = screen.getByLabelText(/^password/i);
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+    const genderRadio = screen.getByLabelText(/woman/i);
+    const termsCheckbox = screen.getByLabelText(/accept terms & conditions/i);
+    const fileInput = screen.getByLabelText(/profile picture/i);
+    const submitButton = screen.getByRole('button', { name: /submit/i });
+
+    const mockFile = new File(['avatar-data'], 'avatar.png', {
+      type: 'image/png',
+    });
+
+    await user.type(nameInput, 'Alex');
+    await user.type(ageInput, '25');
+    await user.type(emailInput, 'alex@test.com');
+    await user.type(countrySelect, 'Poland');
+    await user.click(genderRadio);
+    await user.type(passwordInput, 'ValidPassword123!');
+    await user.type(confirmPasswordInput, 'ValidPassword123!');
+    await user.click(termsCheckbox);
+    await user.upload(fileInput, mockFile);
+
+    await user.click(submitButton);
+
+    await vi.waitFor(() => {
+      expect(mockOnSubmit).toHaveBeenCalledTimes(1);
+    });
+
+    const storeState = useGlobalStore.getState();
+    expect(storeState.submissions.length).toBeGreaterThan(0);
+    expect(storeState.submissions[0].name).toBe('Alex');
+  });
+});

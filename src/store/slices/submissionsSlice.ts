@@ -25,7 +25,7 @@ export const submissionsSlice: StateCreator<
   ...initialSubmissionsState,
   saveSubmission: (data: SubmissionForm) => {
     set((state) => ({
-      submissions: [data, ...state.submissions],
+      submissions: [...state.submissions, data],
     }));
   },
 });

@@ -8,7 +8,13 @@ export const Main = () => {
     <main>
       <div className="submissions-grid">
         {submissionsList.map((data, i) => {
-          return <SubmissionItem key={i} data={data} isNew={i === 0} />;
+          return (
+            <SubmissionItem
+              key={i}
+              data={data}
+              isNew={i === submissionsList.length - 1}
+            />
+          );
         })}
       </div>
     </main>

@@ -11,6 +11,7 @@ import {
 } from "../../utils/data-transformers";
 
 import styles from "./app.module.css";
+import type { Country } from "../../types";
 
 type AppState = {
   searchQuery: string;
@@ -127,7 +128,7 @@ export const App = () => {
       </div>
 
       {/* Country List */}
-      <CountryList
+      <MemoizedCountryList
         countries={data}
         searchQuery={state.searchQuery}
         selectedColumns={state.selectedColumns}
@@ -193,5 +194,38 @@ const MemoizedColumnModal = memo(
       onToggle={onToggle}
       onClose={onClose}
     />
+  ),
+);
+
+const MemoizedCountryList = memo(
+  ({
+    countries,
+    searchQuery,
+    selectedColumns,
+    selectedRegion,
+    selectedYear,
+    sortField,
+    sortOrder,
+    onYearChange,
+  }: {
+    countries: Country[];
+    searchQuery: string;
+    selectedColumns: string[];
+    selectedRegion: string;
+    selectedYear: number;
+    sortField: "name" | "population";
+    sortOrder: "asc" | "desc";
+    onYearChange: (year: number) => void;
+  }) => (
+     <CountryList
+        countries={countries}
+        searchQuery={searchQuery}
+        selectedColumns={selectedColumns}
+        selectedRegion={selectedRegion}
+        selectedYear={selectedYear}
+        sortField={sortField}
+        sortOrder={sortOrder}
+        onYearChange={onYearChange}
+      />
   ),
 );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useCo2Data } from '../../hooks/useCo2Data';
 import { LoadingSpinner } from '../loading-spinner/loading-spinner';
 import { SearchBar } from '../search-bar/search-bar';
@@ -32,40 +32,43 @@ export const App = () => {
     isColumnModalOpen: false,
   });
 
-  const years = data ? getAvailableYears(data) : [];
-  const availableColumns = getAvailableColumns();
+  const years = useMemo(() => {
+    return data ? getAvailableYears(data) : [];
+  }, [data]);
+  
+  const availableColumns = useMemo(() => getAvailableColumns(), []);
 
-  const handleSearch = (value: string) => {
+  const handleSearch = useCallback((value: string) => {
     setState({ ...state, searchQuery: value });
-  };
+  },[]);
 
-  const handleYearChange = (year: number) => {
+  const handleYearChange = useCallback((year: number) => {
     setState({ ...state, selectedYear: year });
-  };
+  },[]);
 
-  const handleSortFieldChange = (field: 'name' | 'population') => {
+  const handleSortFieldChange = useCallback((field: 'name' | 'population') => {
     setState({ ...state, sortField: field });
-  };
+  },[]);
 
-  const handleSortOrderToggle = () => {
+  const handleSortOrderToggle = useCallback(() => {
     setState({
       ...state,
       sortOrder: state.sortOrder === 'asc' ? 'desc' : 'asc',
     });
-  };
+  },[]);
 
-  const handleColumnToggle = (column: string) => {
+  const handleColumnToggle = useCallback((column: string) => {
     setState({
       ...state,
       selectedColumns: state.selectedColumns.includes(column)
         ? state.selectedColumns.filter((c) => c !== column)
         : [...state.selectedColumns, column],
     });
-  };
+  },[]);
 
-  const handleModalToggle = () => {
+  const handleModalToggle = useCallback(() => {
     setState({ ...state, isColumnModalOpen: !state.isColumnModalOpen });
-  };
+  },[]);
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -85,8 +88,12 @@ export const App = () => {
 
       {/* Controls */}
       <div className={styles.controls}>
-        <SearchBar value={state.searchQuery} onChange={handleSearch} />
-        <YearSelector year={state.selectedYear} years={years} onChange={handleYearChange} />
+        <MemoizedSearchBar value={state.searchQuery} onChange={handleSearch} />
+        <MemoizedYearSelector
+          year={state.selectedYear}
+          years={years}
+          onChange={handleYearChange}
+        />
 
         <div className={styles.sortContainer}>
           <label className={styles.sortLabel}>Sort by:</label>
@@ -134,3 +141,13 @@ export const App = () => {
     </div>
   );
 };
+
+const MemoizedYearSelector = memo(
+  ({ year, years, onChange }: { year: number; years: number[]; onChange: (year: number) => void }) => (
+    <YearSelector year={year} years={years} onChange={onChange} />
+  ));
+
+  const MemoizedSearchBar = memo(
+  ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+    <SearchBar value={value} onChange={onChange} />
+  ));

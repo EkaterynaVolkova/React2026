@@ -1,20 +1,23 @@
-import { memo, useCallback, useMemo, useState } from 'react';
-import { useCo2Data } from '../../hooks/useCo2Data';
-import { LoadingSpinner } from '../loading-spinner/loading-spinner';
-import { SearchBar } from '../search-bar/search-bar';
-import { YearSelector } from '../year-selector/year-selector';
-import { CountryList } from '../country-list/country-list';
-import { ColumnModal } from '../column-modal/column-modal';
-import { getAvailableYears, getAvailableColumns } from '../../utils/data-transformers';
+import { memo, useCallback, useMemo, useState } from "react";
+import { useCo2Data } from "../../hooks/useCo2Data";
+import { LoadingSpinner } from "../loading-spinner/loading-spinner";
+import { SearchBar } from "../search-bar/search-bar";
+import { YearSelector } from "../year-selector/year-selector";
+import { CountryList } from "../country-list/country-list";
+import { ColumnModal } from "../column-modal/column-modal";
+import {
+  getAvailableYears,
+  getAvailableColumns,
+} from "../../utils/data-transformers";
 
-import styles from './app.module.css';
+import styles from "./app.module.css";
 
 type AppState = {
   searchQuery: string;
   selectedRegion: string;
   selectedYear: number;
-  sortField: 'name' | 'population';
-  sortOrder: 'asc' | 'desc';
+  sortField: "name" | "population";
+  sortOrder: "asc" | "desc";
   selectedColumns: string[];
   isColumnModalOpen: boolean;
 };
@@ -23,52 +26,55 @@ export const App = () => {
   const { data, isLoading, error } = useCo2Data();
 
   const [state, setState] = useState<AppState>({
-    searchQuery: '',
-    selectedRegion: '',
+    searchQuery: "",
+    selectedRegion: "",
     selectedYear: 2020,
-    sortField: 'population',
-    sortOrder: 'desc',
-    selectedColumns: ['year', 'population', 'co2', 'co2_per_capita'],
+    sortField: "population",
+    sortOrder: "desc",
+    selectedColumns: ["year", "population", "co2", "co2_per_capita"],
     isColumnModalOpen: false,
   });
 
   const years = useMemo(() => {
     return data ? getAvailableYears(data) : [];
   }, [data]);
-  
+
   const availableColumns = useMemo(() => getAvailableColumns(), []);
 
   const handleSearch = useCallback((value: string) => {
-    setState({ ...state, searchQuery: value });
-  },[]);
+    setState((prevState) => ({ ...prevState, searchQuery: value }));
+  }, []);
 
   const handleYearChange = useCallback((year: number) => {
-    setState({ ...state, selectedYear: year });
-  },[]);
+    setState((prevState) => ({ ...prevState, selectedYear: year }));
+  }, []);
 
-  const handleSortFieldChange = useCallback((field: 'name' | 'population') => {
-    setState({ ...state, sortField: field });
-  },[]);
+  const handleSortFieldChange = useCallback((field: "name" | "population") => {
+    setState((prevState) => ({ ...prevState, sortField: field }));
+  }, []);
 
   const handleSortOrderToggle = useCallback(() => {
-    setState({
-      ...state,
-      sortOrder: state.sortOrder === 'asc' ? 'desc' : 'asc',
-    });
-  },[]);
+    setState((prevState) => ({
+      ...prevState,
+      sortOrder: prevState.sortOrder === "asc" ? "desc" : "asc",
+    }));
+  }, []);
 
   const handleColumnToggle = useCallback((column: string) => {
-    setState({
-      ...state,
-      selectedColumns: state.selectedColumns.includes(column)
-        ? state.selectedColumns.filter((c) => c !== column)
-        : [...state.selectedColumns, column],
-    });
-  },[]);
+    setState((prevState) => ({
+      ...prevState,
+      selectedColumns: prevState.selectedColumns.includes(column)
+        ? prevState.selectedColumns.filter((c) => c !== column)
+        : [...prevState.selectedColumns, column],
+    }));
+  }, []);
 
   const handleModalToggle = useCallback(() => {
-    setState({ ...state, isColumnModalOpen: !state.isColumnModalOpen });
-  },[]);
+    setState((prevState) => ({
+      ...prevState,
+      isColumnModalOpen: !prevState.isColumnModalOpen,
+    }));
+  }, []);
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -99,7 +105,9 @@ export const App = () => {
           <label className={styles.sortLabel}>Sort by:</label>
           <select
             value={state.sortField}
-            onChange={(e) => handleSortFieldChange(e.target.value as 'name' | 'population')}
+            onChange={(e) =>
+              handleSortFieldChange(e.target.value as "name" | "population")
+            }
             className={styles.sortSelect}
           >
             <option value="population">Population</option>
@@ -107,7 +115,7 @@ export const App = () => {
           </select>
 
           <button onClick={handleSortOrderToggle} className={styles.sortButton}>
-            {state.sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+            {state.sortOrder === "asc" ? "Ascending" : "Descending"}
           </button>
         </div>
 
@@ -131,7 +139,7 @@ export const App = () => {
       />
 
       {/* Column Modal */}
-      <ColumnModal
+      <MemoizedColumnModal
         isOpen={state.isColumnModalOpen}
         availableColumns={availableColumns}
         selectedColumns={state.selectedColumns}
@@ -143,11 +151,47 @@ export const App = () => {
 };
 
 const MemoizedYearSelector = memo(
-  ({ year, years, onChange }: { year: number; years: number[]; onChange: (year: number) => void }) => (
-    <YearSelector year={year} years={years} onChange={onChange} />
-  ));
+  ({
+    year,
+    years,
+    onChange,
+  }: {
+    year: number;
+    years: number[];
+    onChange: (year: number) => void;
+  }) => <YearSelector year={year} years={years} onChange={onChange} />,
+);
 
-  const MemoizedSearchBar = memo(
-  ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
-    <SearchBar value={value} onChange={onChange} />
-  ));
+const MemoizedSearchBar = memo(
+  ({
+    value,
+    onChange,
+  }: {
+    value: string;
+    onChange: (value: string) => void;
+  }) => <SearchBar value={value} onChange={onChange} />,
+);
+
+const MemoizedColumnModal = memo(
+  ({
+    isOpen,
+    availableColumns,
+    selectedColumns,
+    onToggle,
+    onClose,
+  }: {
+    isOpen: boolean;
+    availableColumns: string[];
+    selectedColumns: string[];
+    onToggle: (value: string) => void;
+    onClose: () => void;
+  }) => (
+    <ColumnModal
+      isOpen={isOpen}
+      availableColumns={availableColumns}
+      selectedColumns={selectedColumns}
+      onToggle={onToggle}
+      onClose={onClose}
+    />
+  ),
+);

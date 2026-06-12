@@ -53,5 +53,5 @@ export type Country = {
 export type ColumnOption = {
   key: string;
   label: string;
-  category: 'basic' | 'additional';
+  category: "basic" | "additional";
 };

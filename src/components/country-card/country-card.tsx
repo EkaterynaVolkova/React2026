@@ -1,13 +1,13 @@
-import type { Country } from '../../types';
-import { DataTable } from '../data-table/data-table';
+import type { Country } from "../../types";
+import { DataTable } from "../data-table/data-table";
 import {
   getPopulationForYear,
   getCo2ForYear,
   createYearDataMap,
-} from '../../utils/data-transformers';
-import { formatNumber } from '../../utils/format-utils';
+} from "../../utils/data-transformers";
+import { formatNumber } from "../../utils/format-utils";
 
-import styles from './country-card.module.css';
+import styles from "./country-card.module.css";
 
 type CountryCardProps = {
   country: Country;
@@ -15,7 +15,11 @@ type CountryCardProps = {
   selectedColumns: string[];
 };
 
-export const CountryCard = ({ country, selectedYear, selectedColumns }: CountryCardProps) => {
+export const CountryCard = ({
+  country,
+  selectedYear,
+  selectedColumns,
+}: CountryCardProps) => {
   const yearDataMap = createYearDataMap(country.data);
   const population = getPopulationForYear(yearDataMap, selectedYear);
   const co2 = getCo2ForYear(yearDataMap, selectedYear);
@@ -24,7 +28,9 @@ export const CountryCard = ({ country, selectedYear, selectedColumns }: CountryC
     <div className={styles.card}>
       <div className={styles.header}>
         <h3 className={styles.title}>{country.id}</h3>
-        {country.iso_code && <span className={styles.isoCode}>{country.iso_code}</span>}
+        {country.iso_code && (
+          <span className={styles.isoCode}>{country.iso_code}</span>
+        )}
       </div>
 
       <div className={styles.stats}>
@@ -36,7 +42,11 @@ export const CountryCard = ({ country, selectedYear, selectedColumns }: CountryC
         </div>
       </div>
 
-      <DataTable data={country.data} year={selectedYear} columns={selectedColumns} />
+      <DataTable
+        data={country.data}
+        year={selectedYear}
+        columns={selectedColumns}
+      />
     </div>
   );
 };

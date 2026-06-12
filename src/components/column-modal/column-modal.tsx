@@ -1,4 +1,4 @@
-import styles from './column-modal.module.css';
+import styles from "./column-modal.module.css";
 
 type ColumnModalProps = {
   isOpen: boolean;

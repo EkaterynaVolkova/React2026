@@ -1,4 +1,4 @@
-import styles from './search-bar.module.css';
+import styles from "./search-bar.module.css";
 
 type SearchBarProps = {
   value: string;

@@ -8,11 +8,11 @@
  */
 export const formatNumber = (
   value: number | undefined,
-  options?: Intl.NumberFormatOptions
+  options?: Intl.NumberFormatOptions,
 ): string => {
   if (value === undefined || value === null) {
-    return 'N/A';
+    return "N/A";
   }
 
-  return value.toLocaleString('en-US', options ?? { maximumFractionDigits: 0 });
+  return value.toLocaleString("en-US", options ?? { maximumFractionDigits: 0 });
 };

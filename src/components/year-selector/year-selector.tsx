@@ -1,4 +1,4 @@
-import styles from './year-selector.module.css';
+import styles from "./year-selector.module.css";
 
 type YearSelectorProps = {
   year: number;

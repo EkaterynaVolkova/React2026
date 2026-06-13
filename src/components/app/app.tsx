@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useCo2Data } from "../../hooks/useCo2Data";
 import { LoadingSpinner } from "../loading-spinner/loading-spinner";
 import { SearchBar } from "../search-bar/search-bar";
@@ -11,7 +11,6 @@ import {
 } from "../../utils/data-transformers";
 
 import styles from "./app.module.css";
-import type { Country } from "../../types";
 
 type AppState = {
   searchQuery: string;
@@ -96,8 +95,8 @@ export const App = () => {
 
       {/* Controls */}
       <div className={styles.controls}>
-        <MemoizedSearchBar value={state.searchQuery} onChange={handleSearch} />
-        <MemoizedYearSelector
+        <SearchBar value={state.searchQuery} onChange={handleSearch} />
+        <YearSelector
           year={state.selectedYear}
           years={years}
           onChange={handleYearChange}
@@ -127,7 +126,7 @@ export const App = () => {
       </div>
 
       {/* Country List */}
-      <MemoizedCountryList
+      <CountryList
         countries={data}
         searchQuery={state.searchQuery}
         selectedColumns={state.selectedColumns}
@@ -139,7 +138,7 @@ export const App = () => {
       />
 
       {/* Column Modal */}
-      <MemoizedColumnModal
+      <ColumnModal
         isOpen={state.isColumnModalOpen}
         availableColumns={availableColumns}
         selectedColumns={state.selectedColumns}
@@ -149,82 +148,3 @@ export const App = () => {
     </div>
   );
 };
-
-const MemoizedYearSelector = memo(
-  ({
-    year,
-    years,
-    onChange,
-  }: {
-    year: number;
-    years: number[];
-    onChange: (year: number) => void;
-  }) => <YearSelector year={year} years={years} onChange={onChange} />,
-);
-
-const MemoizedSearchBar = memo(
-  ({
-    value,
-    onChange,
-  }: {
-    value: string;
-    onChange: (value: string) => void;
-  }) => <SearchBar value={value} onChange={onChange} />,
-);
-
-const MemoizedColumnModal = memo(
-  ({
-    isOpen,
-    availableColumns,
-    selectedColumns,
-    onToggle,
-    onClose,
-  }: {
-    isOpen: boolean;
-    availableColumns: string[];
-    selectedColumns: string[];
-    onToggle: (value: string) => void;
-    onClose: () => void;
-  }) => (
-    <ColumnModal
-      isOpen={isOpen}
-      availableColumns={availableColumns}
-      selectedColumns={selectedColumns}
-      onToggle={onToggle}
-      onClose={onClose}
-    />
-  ),
-);
-
-const MemoizedCountryList = memo(
-  ({
-    countries,
-    searchQuery,
-    selectedColumns,
-    selectedRegion,
-    selectedYear,
-    sortField,
-    sortOrder,
-    onYearChange,
-  }: {
-    countries: Country[];
-    searchQuery: string;
-    selectedColumns: string[];
-    selectedRegion: string;
-    selectedYear: number;
-    sortField: "name" | "population";
-    sortOrder: "asc" | "desc";
-    onYearChange: (year: number) => void;
-  }) => (
-     <CountryList
-        countries={countries}
-        searchQuery={searchQuery}
-        selectedColumns={selectedColumns}
-        selectedRegion={selectedRegion}
-        selectedYear={selectedYear}
-        sortField={sortField}
-        sortOrder={sortOrder}
-        onYearChange={onYearChange}
-      />
-  ),
-);

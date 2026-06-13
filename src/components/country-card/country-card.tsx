@@ -8,7 +8,7 @@ import {
 import { formatNumber } from "../../utils/format-utils";
 
 import styles from "./country-card.module.css";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 
 type CountryCardProps = {
   country: Country;
@@ -16,7 +16,7 @@ type CountryCardProps = {
   selectedColumns: string[];
 };
 
-export const CountryCard = ({
+export const CountryCard = memo(({
   country,
   selectedYear,
   selectedColumns,
@@ -59,4 +59,4 @@ export const CountryCard = ({
       />
     </div>
   );
-};
+});

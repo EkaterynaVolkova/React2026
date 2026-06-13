@@ -50,7 +50,8 @@ export const App = () => {
     setState((prevState) => ({ ...prevState, selectedYear: year }));
   }, []);
 
-  const handleSortFieldChange = useCallback((field: "name" | "population") => {
+  const handleSortFieldChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const field = e.target.value as "name" | "population";
     setState((prevState) => ({ ...prevState, sortField: field }));
   }, []);
 
@@ -106,9 +107,7 @@ export const App = () => {
           <label className={styles.sortLabel}>Sort by:</label>
           <select
             value={state.sortField}
-            onChange={(e) =>
-              handleSortFieldChange(e.target.value as "name" | "population")
-            }
+            onChange={handleSortFieldChange}
             className={styles.sortSelect}
           >
             <option value="population">Population</option>

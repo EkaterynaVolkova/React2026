@@ -28,7 +28,8 @@ export const CountryList = ({
   sortField,
   sortOrder,
 }: CountryListProps) => {
-  const filteredCountries = useMemo(() => countries
+  const filteredCountries = useMemo(() => {
+    return countries
     .filter((c) => {
       const matchesSearch = c.id
         .toLowerCase()
@@ -49,13 +50,14 @@ export const CountryList = ({
           getPopulationForYear(createYearDataMap(b.data), selectedYear) || 0;
         return sortOrder === "asc" ? popA - popB : popB - popA;
       }
-    }) ,[countries, searchQuery, selectedRegion, selectedYear, sortField, sortOrder]);
+    });
+  }, [countries, searchQuery, selectedRegion, selectedYear, sortField, sortOrder]);
 
   return (
     <div className={styles.countryList}>
-      {filteredCountries.map((country, index) => (
+      {filteredCountries.map((country) => (
         <CountryCard
-          key={index}
+          key={country.id}
           country={country}
           selectedYear={selectedYear}
           selectedColumns={selectedColumns}

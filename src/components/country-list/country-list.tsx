@@ -4,38 +4,13 @@ import {
   getPopulationForYear,
   createYearDataMap,
 } from "../../utils/data-transformers";
-import { List, useDynamicRowHeight, type RowComponentProps } from "react-window"; 
-
 import styles from "./country-list.module.css";
-import { memo, useMemo} from "react";
-
-type RowDataProps = {
-  filteredCountries: Country[];
-  selectedYear: number;
-  selectedColumns: string[];
-};
-
-type CountryRowProps = RowComponentProps & RowDataProps;
-
-const CountryRow = ({
-  index,
-  style,
-  filteredCountries,
-  selectedYear,
-  selectedColumns,
-}: CountryRowProps) => {
-  const country = filteredCountries[index];
-
-  return (
-    <div style={style}>
-      <CountryCard
-        country={country}
-        selectedYear={selectedYear}
-        selectedColumns={selectedColumns}
-      />
-    </div>
-  );
-};
+import { memo, useMemo } from "react";
+import {
+  List,
+  useDynamicRowHeight,
+  type RowComponentProps,
+} from "react-window";
 
 type CountryListProps = {
   countries: Country[];
@@ -48,62 +23,103 @@ type CountryListProps = {
   onYearChange: (year: number) => void;
 };
 
-export const CountryList = memo(({
+type RowDataProps = {
+  countries: Country[];
+  selectedYear: number;
+  selectedColumns: string[];
+};
+
+const CountryRow = ({
+  index,
+  style,
   countries,
-  searchQuery,
-  selectedColumns,
-  selectedRegion,
   selectedYear,
-  sortField,
-  sortOrder,
-}: CountryListProps) => {
+  selectedColumns,
+}: RowComponentProps<RowDataProps>) => {
+  const country = countries[index];
 
- const filteredCountries = useMemo(() => {
-  const filtered = countries.filter((c) => {
-    const matchesSearch = c.id.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRegion = !selectedRegion || c.data.some((d) => d.region === selectedRegion);
-    return matchesSearch && matchesRegion;
-  });
-
-  if (sortField === "name") {
-    return [...filtered].sort((a, b) => 
-      sortOrder === "asc" ? a.id.localeCompare(b.id) : b.id.localeCompare(a.id)
-    );
+  if (!country) {
+    return null;
   }
 
-  const populationCache: Record<string, number> = {};
-  
-  filtered.forEach((c) => {
-    populationCache[c.id] = getPopulationForYear(createYearDataMap(c.data), selectedYear) || 0;
-  });
-
-  return [...filtered].sort((a, b) => {
-    const popA = populationCache[a.id];
-    const popB = populationCache[b.id];
-    return sortOrder === "asc" ? popA - popB : popB - popA;
-  });
-
-}, [countries, searchQuery, selectedRegion, selectedYear, sortField, sortOrder]);
-
-  const countryRowHeight = useDynamicRowHeight({
-    defaultRowHeight: 300
-  });
-
-  const countryRowProps = useMemo<RowDataProps>(() => ({
-    filteredCountries,
-    selectedYear,
-    selectedColumns
-  }), [filteredCountries, selectedYear, selectedColumns]);
-
   return (
-    <div className={styles.countryList}>
-       <List
-        rowComponent={CountryRow}
-        rowCount={filteredCountries.length}
-        rowHeight={countryRowHeight}
-        rowProps={countryRowProps}
-        style={{ width: "100%", height: "100%" }}
+    <div style={style}>
+      <CountryCard
+        key={country.id}
+        country={country}
+        selectedYear={selectedYear}
+        selectedColumns={selectedColumns}
       />
     </div>
   );
-});
+};
+
+export const CountryList = memo(
+  ({
+    countries,
+    searchQuery,
+    selectedColumns,
+    selectedRegion,
+    selectedYear,
+    sortField,
+    sortOrder,
+  }: CountryListProps) => {
+    const filteredCountries = useMemo(() => {
+      return countries
+        .filter((c) => {
+          const matchesSearch = c.id
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase());
+          const matchesRegion =
+            !selectedRegion || c.data.some((d) => d.region === selectedRegion);
+          return matchesSearch && matchesRegion;
+        })
+        .sort((a, b) => {
+          if (sortField === "name") {
+            return sortOrder === "asc"
+              ? a.id.localeCompare(b.id)
+              : b.id.localeCompare(a.id);
+          } else {
+            const popA =
+              getPopulationForYear(createYearDataMap(a.data), selectedYear) ||
+              0;
+            const popB =
+              getPopulationForYear(createYearDataMap(b.data), selectedYear) ||
+              0;
+            return sortOrder === "asc" ? popA - popB : popB - popA;
+          }
+        });
+    }, [
+      countries,
+      searchQuery,
+      selectedRegion,
+      selectedYear,
+      sortField,
+      sortOrder,
+    ]);
+
+    const rowHeight = useDynamicRowHeight({
+      defaultRowHeight: 300,
+    });
+
+    const countryRowProps = useMemo<RowDataProps>(
+      () => ({
+        countries: filteredCountries,
+        selectedYear,
+        selectedColumns,
+      }),
+      [filteredCountries, selectedYear, selectedColumns],
+    );
+
+    return (
+      <div className={styles.countryList} style={{ height: "600px" }}>
+        <List
+          rowComponent={CountryRow}
+          rowCount={filteredCountries.length}
+          rowHeight={rowHeight}
+          rowProps={countryRowProps}
+        />
+      </div>
+    );
+  },
+);

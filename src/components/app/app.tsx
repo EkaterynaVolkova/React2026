@@ -49,10 +49,13 @@ export const App = () => {
     setState((prevState) => ({ ...prevState, selectedYear: year }));
   }, []);
 
-  const handleSortFieldChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const field = e.target.value as "name" | "population";
-    setState((prevState) => ({ ...prevState, sortField: field }));
-  }, []);
+  const handleSortFieldChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const field = e.target.value as "name" | "population";
+      setState((prevState) => ({ ...prevState, sortField: field }));
+    },
+    [],
+  );
 
   const handleSortOrderToggle = useCallback(() => {
     setState((prevState) => ({

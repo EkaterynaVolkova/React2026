@@ -1,5 +1,7 @@
-import { useTheme } from '../../hooks/useTheme';
-import { Button } from '../Button';
+'use client';
+
+import { useTheme } from '@/hooks/useTheme';
+import { Button } from '@/components/Button';
 
 export const ThemeSwitcher = () => {
   const { theme, toggleTheme } = useTheme();

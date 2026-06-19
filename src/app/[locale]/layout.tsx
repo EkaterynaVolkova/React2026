@@ -3,7 +3,10 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales, type Locale } from '@/i18n/config';
 import { Geist, Geist_Mono } from 'next/font/google';
+import './variables.css';
 import './globals.css';
+import Header from '@/components/Header';
+import { ThemeProvider } from '@/context/ThemeProvider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -46,7 +49,10 @@ export default async function LocaleLayout({ children, params }: Props) {
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <ThemeProvider>
+            <Header />
+            {children}
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

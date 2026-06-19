@@ -1,0 +1,19 @@
+{
+  "common": {
+    "appName": "DevType"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About"
+  },
+  "about": {
+    "title": "About",
+    "subtitle": "Author Info",
+    "role_name": "Developer",
+    "role_title": "Frontend Developer",
+    "role": "Role",
+    "role_initials": "Ekaterina Volkova",
+    "desc": "Built as part of the education program",
+    "course": "RS School React Course"
+  }
+}

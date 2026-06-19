@@ -1,0 +1,19 @@
+{
+  "common": {
+    "appName": "RSS React"
+  },
+  "nav": {
+    "home": "Домой",
+    "about": "О приложении"
+  },
+  "about": {
+    "title": "О приложении",
+    "subtitle": "Информация об авторе",
+    "role_name": "Разработчик",
+    "role_title": "Фронтенд разработчик",
+    "role": "Роль",
+    "role_initials": "Екатерина Волкова",
+    "desc": "Разработано как часть образовательной программы",
+    "course": "RS School React Course"
+  }
+}

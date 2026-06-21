@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
+import { LangSwitcher } from '../LangSwitcher';
 
 export default async function AppNav() {
   const t = await getTranslations('nav');
@@ -14,6 +15,7 @@ export default async function AppNav() {
         {t('about')}
       </Link>
       <ThemeSwitcher />
+      <LangSwitcher />
     </nav>
   );
 }

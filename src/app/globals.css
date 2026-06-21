@@ -87,3 +87,24 @@ body {
 .error-button:hover {
   background-color: var(--color-red-2);
 }
+
+.boundary-error-wrap {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+.error {
+  color: var(--color-red-2);
+}
+
+.error-msg {
+  margin: 10px;
+  font-size: 1.5rem;
+}

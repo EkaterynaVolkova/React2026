@@ -37,5 +37,10 @@
   },
   "controls": {
     "search": "Search"
+  },
+  "error": {
+    "header": "Something went wrong. Try refreshing the page",
+    "placeholder": "An unexpected error occurred",
+    "reload": "Reload"
   }
 }

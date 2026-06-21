@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "RSS React"
+    "app_name": "Рик и Морти"
   },
   "nav": {
     "home": "Домой",
@@ -15,5 +15,27 @@
     "role_initials": "Екатерина Волкова",
     "desc": "Разработано как часть образовательной программы",
     "course": "RS School React Course"
+  },
+  "character": {
+    "status_label": "Статус",
+    "species_label": "Разновидность",
+    "gender_label": "Пол",
+    "close": "Закрыть",
+    "process": "Обновление...",
+    "refresh": "Обновить"
+  },
+  "csv": {
+    "number": "Количество выбранных карточек",
+    "unselect": "Отменить выбор",
+    "download": "Загрузить"
+  },
+  "search": {
+    "app_name": "Рик и Морти",
+    "crashed": "Я поломался",
+    "process": "Обновление...",
+    "refresh": "Обновить"
+  },
+  "controls": {
+    "search": "Поиск"
   }
 }

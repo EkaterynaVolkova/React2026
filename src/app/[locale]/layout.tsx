@@ -7,6 +7,9 @@ import './variables.css';
 import './globals.css';
 import Header from '@/components/Header';
 import { ThemeProvider } from '@/context/ThemeProvider';
+import { QueryClient } from '@tanstack/react-query';
+import { CACHE_TTL } from '@/constants/global';
+import ReactQueryProvider from '@/utils/providers/ReactQueryProvider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -42,18 +45,31 @@ export default async function LocaleLayout({ children, params }: Props) {
   // Load messages for this locale
   const messages = await getMessages();
 
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        refetchOnWindowFocus: false,
+        staleTime: CACHE_TTL,
+        gcTime: CACHE_TTL * 2,
+      },
+    },
+  });
+
   return (
     <html
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <NextIntlClientProvider messages={messages}>
-          <ThemeProvider>
-            <Header />
-            {children}
-          </ThemeProvider>
-        </NextIntlClientProvider>
+        <ReactQueryProvider>
+          <NextIntlClientProvider messages={messages}>
+            <ThemeProvider>
+              <Header />
+              <main className="container">{children}</main>
+            </ThemeProvider>
+          </NextIntlClientProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

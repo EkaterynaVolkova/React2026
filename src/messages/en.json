@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "DevType"
+    "app_name": "Rick and Morty"
   },
   "nav": {
     "home": "Home",
@@ -15,5 +15,27 @@
     "role_initials": "Ekaterina Volkova",
     "desc": "Built as part of the education program",
     "course": "RS School React Course"
+  },
+  "character": {
+    "status_label": "Status",
+    "species_label": "Species",
+    "gender_label": "Gender",
+    "close": "Close",
+    "process": "Refreshing...",
+    "refresh": "Refresh"
+  },
+  "csv": {
+    "number": "Number of Selected Items",
+    "unselect": "Unselect all",
+    "download": "Download"
+  },
+  "search": {
+    "app_name": "Rick and Morty",
+    "crashed": "I crashed",
+    "process": "Refreshing...",
+    "refresh": "Refresh"
+  },
+  "controls": {
+    "search": "Search"
   }
 }

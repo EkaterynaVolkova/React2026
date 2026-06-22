@@ -42,5 +42,10 @@
     "header": "Something went wrong. Try refreshing the page",
     "placeholder": "An unexpected error occurred",
     "reload": "Reload"
+  },
+  "not_found": {
+    "title": "Page Not Found",
+    "description": "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable",
+    "go_home": "Back to Home"
   }
 }

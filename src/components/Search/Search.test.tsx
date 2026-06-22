@@ -1,27 +1,57 @@
 import { render, screen } from '@testing-library/react';
 import { Search } from './Search';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useGlobalStore } from '@/stores/useGlobalStore';
-import { useCharactersQuery } from '@/hooks/useCharactersQuery';
-import { SEARCH_QUERY_KEY } from '@/constants/storage';
-import userEvent from '@testing-library/user-event';
-import { getCharacters } from '@/api/data.service';
+import { getCharacters, getSingleCharacter } from '@/api/data.service';
 import searchResultsJSON from '../../test-utils/fixtures/searchResults.json';
-import mockRouter from 'next-router-mock';
-import { NextIntlClientProvider } from 'next-intl';
+import { Character } from '@/types/shared/types';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 vi.mock('@/api/data.service', () => ({
   getCharacters: vi.fn(),
+  getSingleCharacter: vi.fn(),
 }));
 
-vi.mock('../../hooks/useCharactersQuery', () => ({
-  useCharactersQuery: vi.fn(),
+vi.mock('next-intl/server', () => ({
+  getTranslations: vi.fn().mockResolvedValue((key: string) => {
+    const messages: Record<string, string> = {
+      app_name: 'Rick and Morty',
+    };
+    return messages[key] || key;
+  }),
 }));
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => mockRouter,
-  usePathname: () => mockRouter.pathname,
-  useSearchParams: () => new URLSearchParams(mockRouter.asPath.split('?')[1]),
+vi.mock('@/components/TopControls', () => ({
+  TopControls: () => <div data-testid="top-controls" />,
+}));
+vi.mock('@/components/ResultsGrid', () => ({
+  ResultsGrid: ({ searchResults }: { searchResults: Character[] }) => (
+    <div data-testid="results-grid">
+      {searchResults?.map((item) => (
+        <div key={item.id} data-testid="character-card">
+          {item.name}
+        </div>
+      ))}
+    </div>
+  ),
+}));
+vi.mock('@/components/Pagination', () => ({
+  Pagination: () => <div data-testid="pagination" />,
+}));
+vi.mock('@/components/CharacterDetails', () => ({
+  CharacterDetails: ({ character }: { character: Character }) => (
+    <div data-testid="character-details">{character?.name}</div>
+  ),
+}));
+vi.mock('../FlyoutPanel', () => ({
+  FlyoutPanel: () => <div data-testid="flyout-panel" />,
+}));
+vi.mock('../ErrorButton', () => ({
+  ErrorButton: () => <div data-testid="error-button" />,
 }));
 
 const emptyResponse = {
@@ -29,304 +59,70 @@ const emptyResponse = {
   results: [],
 };
 
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false } },
-});
-
-const mockMessages = {
-  csv: {
-    number: 'Number of Selected Items',
-    unselect: 'Unselect all',
-    download: 'Download',
-  },
-  search: {
-    app_name: 'Rick and Morty',
-    crashed: 'I crashed',
-    process: 'Refreshing...',
-    refresh: 'Refresh',
-  },
-  controls: {
-    search: 'Search',
-  },
-  error: {
-    header: 'Something went wrong. Try refreshing the page',
-    placeholder: 'An unexpected error occurred',
-    reload: 'Reload',
-  },
+const renderServerComponent = async (
+  searchParams: {
+    page?: string | undefined;
+    query?: string | undefined;
+    q?: string | undefined;
+    id?: string | undefined;
+  } = { page: '1' }
+) => {
+  const SearchResolved = await Search({ searchParams });
+  return render(SearchResolved);
 };
 
-const renderComponent = () => {
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <NextIntlClientProvider locale="en" messages={mockMessages}>
-        <Search />
-      </NextIntlClientProvider>
-    </QueryClientProvider>
-  );
-};
-
-describe('Search Component Tests', () => {
+describe('Search Server Component Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
     window.localStorage.clear();
     useGlobalStore.getState().reset();
 
-    mockRouter.setCurrentUrl('/?page=1');
-
-    vi.mocked(useCharactersQuery).mockReturnValue({
-      data: emptyResponse,
-      error: null,
-      isFetching: false,
-      isSuccess: true,
-      isError: false,
-    } as unknown as ReturnType<typeof useCharactersQuery>);
+    vi.mocked(getCharacters).mockResolvedValue(emptyResponse);
+    vi.mocked(getSingleCharacter).mockResolvedValue(
+      searchResultsJSON.results[0]
+    );
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-    window.localStorage.clear();
-  });
+  describe('Server-Side Fetching Integration', () => {
+    it('Calls getCharacters with correct parameters from searchParams', async () => {
+      await renderServerComponent({ page: '2', query: 'Rick' });
 
-  describe('LocalStorage Integration', () => {
-    it('Retrieves saved search term on component mount', async () => {
-      const text = 'Rick';
-      window.localStorage.setItem(SEARCH_QUERY_KEY, JSON.stringify(text));
-
-      vi.mocked(useCharactersQuery).mockReturnValue({
-        data: emptyResponse,
-        error: null,
-        isFetching: false,
-        isSuccess: true,
-        isError: false,
-      } as unknown as ReturnType<typeof useCharactersQuery>);
-
-      renderComponent();
-
-      const input = await screen.findByPlaceholderText(/Search/i);
-      expect(input).toHaveValue(text);
-      expect(useCharactersQuery).toHaveBeenCalled();
+      expect(getCharacters).toHaveBeenCalledWith(2, 'Rick');
     });
 
-    it('Overwrites existing localStorage value when new search is performed', async () => {
-      const user = userEvent.setup();
-      const text = 'Morty';
+    it('Renders the results grid when API returns successful response', async () => {
+      vi.mocked(getCharacters).mockResolvedValue(searchResultsJSON);
 
-      renderComponent();
-
-      const input = screen.getByPlaceholderText(/Search/i);
-      const button = screen.getByRole('button', { name: 'Search' });
-      await user.type(input, text);
-      await user.click(button);
-
-      const savedQueryRaw = window.localStorage.getItem(SEARCH_QUERY_KEY);
-      const savedQuery = savedQueryRaw ? JSON.parse(savedQueryRaw) : null;
-      expect(savedQuery).toBe(text.trim());
-    });
-  });
-
-  describe('API Integration Tests', () => {
-    it('Handles API error responses', async () => {
-      const errorMsg = 'Server is down';
-      vi.mocked(useCharactersQuery).mockReturnValue({
-        data: undefined,
-        error: new Error(errorMsg),
-        isFetching: false,
-        isSuccess: false,
-        isError: true,
-      } as unknown as ReturnType<typeof useCharactersQuery>);
-
-      renderComponent();
-
-      expect(
-        await screen.findByText(new RegExp(errorMsg, 'i'))
-      ).toBeInTheDocument();
-    });
-
-    it('Handles successful API responses', async () => {
-      vi.mocked(useCharactersQuery).mockReturnValue({
-        data: searchResultsJSON,
-        error: null,
-        isFetching: false,
-        isSuccess: true,
-        isError: false,
-      } as unknown as ReturnType<typeof useCharactersQuery>);
-
-      renderComponent();
+      await renderServerComponent();
 
       const items = await screen.findAllByTestId('character-card');
       expect(items).toHaveLength(searchResultsJSON.results.length);
     });
 
-    it('Calls API with correct parameters', async () => {
-      const text = 'Rick';
-      window.localStorage.setItem(SEARCH_QUERY_KEY, JSON.stringify(text));
+    it('Displays an error message on server fetch failure', async () => {
+      const errorMsg = 'Rick and Morty API is down';
+      vi.mocked(getCharacters).mockRejectedValue(new Error(errorMsg));
 
-      renderComponent();
+      await renderServerComponent();
 
-      expect(useCharactersQuery).toHaveBeenCalledWith(1, text);
+      expect(screen.getByText(errorMsg)).toBeInTheDocument();
     });
 
-    it('Calls API only once if search text is not changed', async () => {
-      vi.mocked(getCharacters).mockResolvedValue(emptyResponse);
-      const text = 'Rick';
-      const user = userEvent.setup();
+    it('Fetches single character data on server if id is provided', async () => {
+      const mockCharacter = searchResultsJSON.results[0];
+      vi.mocked(getSingleCharacter).mockResolvedValue(mockCharacter);
 
-      renderComponent();
+      await renderServerComponent({ page: '1', id: String(mockCharacter.id) });
 
-      expect(useCharactersQuery).toHaveBeenCalledWith(1, '');
-
-      const input = screen.getByPlaceholderText(/Search/i);
-      const button = screen.getByRole('button', { name: 'Search' });
-      await user.type(input, text);
-      await user.click(button);
-      await user.click(button);
-      await user.click(button);
-
-      expect(useCharactersQuery).toHaveBeenCalledWith(1, text);
-
-      const calls = vi.mocked(useCharactersQuery).mock.calls;
-      const uniqueCalls = calls.map(([page, query]) => `${page}-${query}`);
-      const uniqueSets = new Set(uniqueCalls);
-      expect(uniqueSets.size).toBe(2);
+      expect(getSingleCharacter).toHaveBeenCalledWith(mockCharacter.id);
     });
 
-    it('Handles unexpected error types', async () => {
-      vi.mocked(useCharactersQuery).mockReturnValue({
-        data: undefined,
-        error: new Error('Something went wrong'),
-        isFetching: false,
-        isSuccess: false,
-        isError: true,
-      } as unknown as ReturnType<typeof useCharactersQuery>);
+    it('Renders an empty details placeholder when no id is selected', async () => {
+      const { container } = await renderServerComponent({ page: '1', id: '' });
 
-      renderComponent();
-
-      const errorText = await screen.findByText(/something went wrong/i);
-      expect(errorText).toBeInTheDocument();
-    });
-  });
-
-  describe('Rendering Tests', () => {
-    beforeEach(() => {
-      vi.mocked(useCharactersQuery).mockReturnValue({
-        data: searchResultsJSON,
-        error: null,
-        isFetching: false,
-        isSuccess: true,
-        isError: false,
-      } as unknown as ReturnType<typeof useCharactersQuery>);
-    });
-
-    it('Handles page change when pagination button is clicked', async () => {
-      const user = userEvent.setup();
-      renderComponent();
-
-      const page2Button = await screen.findByRole('button', { name: '2' });
-      await user.click(page2Button);
-
-      expect(mockRouter.query).toEqual(expect.objectContaining({ page: '2' }));
-    });
-
-    it('Handles last page change when » button is clicked', async () => {
-      const user = userEvent.setup();
-      renderComponent();
-
-      const lastPageButton = await screen.findByRole('button', { name: '»' });
-      await user.click(lastPageButton);
-
-      expect(mockRouter.query).toEqual(
-        expect.objectContaining({ page: String(searchResultsJSON.info.pages) })
-      );
-    });
-
-    it('Handles previous page change when ‹ button is clicked', async () => {
-      mockRouter.setCurrentUrl('/?page=3');
-
-      const user = userEvent.setup();
-      renderComponent();
-
-      const prevPageButton = await screen.findByRole('button', { name: '‹' });
-      await user.click(prevPageButton);
-
-      expect(mockRouter.query).toEqual(expect.objectContaining({ page: '2' }));
-    });
-
-    it('FlyoutPanel component is visible when selected item', async () => {
-      const user = userEvent.setup();
-
-      renderComponent();
-
-      const checkbox = await screen.findAllByRole('checkbox');
-      await user.click(checkbox[0]);
-
-      expect(
-        await screen.findByText(/Number of Selected Items/i)
-      ).toBeVisible();
-    });
-
-    it('FlyoutPanel component is not visible when no selected item', async () => {
-      renderComponent();
-
-      const flyoutText = screen.queryByText(/Number of Selected Items/i);
-      expect(flyoutText).not.toBeInTheDocument();
-    });
-  });
-
-  describe('Querying Coverage', () => {
-    it('Displays a Spinner while querying characters data', () => {
-      vi.mocked(useCharactersQuery).mockReturnValue({
-        data: undefined,
-        error: null,
-        isFetching: true,
-        isSuccess: false,
-        isError: false,
-      } as unknown as ReturnType<typeof useCharactersQuery>);
-
-      renderComponent();
-
-      expect(screen.getByTestId('spinner')).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: 'Refreshing...' })
-      ).toBeInTheDocument();
-    });
-
-    it('Displays error message on failure', () => {
-      const mockErrorText = 'Failed to fetch characters from server';
-
-      vi.mocked(useCharactersQuery).mockReturnValue({
-        data: undefined,
-        error: new Error(mockErrorText),
-        isFetching: false,
-        isSuccess: false,
-        isError: true,
-      } as unknown as ReturnType<typeof useCharactersQuery>);
-
-      renderComponent();
-
-      expect(screen.getByText(mockErrorText)).toBeInTheDocument();
-    });
-
-    it('Triggers query invalidation on Refresh button click', async () => {
-      const user = userEvent.setup();
-      const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
-
-      vi.mocked(useCharactersQuery).mockReturnValue({
-        data: searchResultsJSON,
-        error: null,
-        isFetching: false,
-        isSuccess: true,
-        isError: false,
-      } as unknown as ReturnType<typeof useCharactersQuery>);
-
-      renderComponent();
-
-      const refreshButton = screen.getByRole('button', { name: 'Refresh' });
-      await user.click(refreshButton);
-
-      expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ['characters', 1, ''],
-      });
+      const placeholder = container.querySelector('.details-empty-placeholder');
+      expect(placeholder).toBeInTheDocument();
     });
   });
 });

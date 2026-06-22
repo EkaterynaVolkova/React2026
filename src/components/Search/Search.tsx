@@ -1,183 +1,100 @@
-'use client';
+import { Suspense } from 'react';
+import { getCharacters, getSingleCharacter } from '@/api/data.service';
+import { TopControls } from '@/components/TopControls';
+import { ResultsGrid } from '@/components/ResultsGrid';
+import { CharacterDetails } from '@/components/CharacterDetails';
+import { Pagination } from '@/components/Pagination';
+import { getTranslations } from 'next-intl/server';
+import { Spinner } from '@/components/Spinner';
+import { FlyoutPanel } from '@/components/FlyoutPanel';
+import '@/components/Search/Search.css';
+import { ErrorButton } from '@/components/ErrorButton';
 
-import { SEARCH_QUERY_KEY } from '@/constants/storage';
-import { useCharactersQuery } from '@/hooks/useCharactersQuery';
-import useLocalStorage from '@/hooks/useLocalStorage';
-import { useQueryClient } from '@tanstack/react-query';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-import { Button } from '../Button';
-import { CharacterDetails } from '../CharacterDetails';
-import { FlyoutPanel } from '../FlyoutPanel';
-import { ResultsGrid } from '../ResultsGrid';
-import { Spinner } from '../Spinner';
-import { Pagination } from '../Pagination';
-import { TopControls } from '../TopControls';
-import { ErrorMessage } from '../ErrorMessage';
-import { useTranslations } from 'next-intl';
-import './Search.css';
+interface SearchProps {
+  searchParams: {
+    page?: string;
+    query?: string;
+    q?: string;
+    id?: string;
+  };
+}
 
-export const Search = () => {
-  const [shouldCrash, setShouldCrash] = useState(false);
-  const [storedQuery, setStoredQuery] = useLocalStorage<string>(
-    SEARCH_QUERY_KEY,
-    ''
-  );
+export const Search = async ({ searchParams }: SearchProps) => {
+  const currentPage = Number(searchParams.page) || 1;
+  const searchQuery = searchParams.query || searchParams.q || '';
+  const characterId = searchParams.id ? Number(searchParams.id) : null;
 
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const t = useTranslations('search');
+  const t = await getTranslations('search');
 
-  // Get a new searchParams string by merging the current
-  // searchParams with a provided key/value pair
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set(name, value);
-
-      return params.toString();
-    },
-    [searchParams]
-  );
-
-  const currentPage = Number(searchParams.get('page')) || 1;
-  const characterId = Number(searchParams.get('id')) || null;
-  const searchQuery = storedQuery || '';
-  const hasPageParam = searchParams.has('page');
-  const queryClient = useQueryClient();
-
-  const {
-    data: charactersData,
-    error,
-    isFetching,
-    isSuccess,
-    isError,
-  } = useCharactersQuery(currentPage, searchQuery);
-
-  useEffect(() => {
-    if (!hasPageParam) {
-      router.push(pathname + '?' + createQueryString('page', '1'), {
-        scroll: false,
-      });
+  let charactersData = null;
+  let errorLoading = null;
+  try {
+    charactersData = await getCharacters(currentPage, searchQuery);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      errorLoading = err.message;
+    } else {
+      errorLoading = String(err);
     }
-  }, [hasPageParam, createQueryString, pathname, router]);
-
-  const onSearch = useCallback(
-    (query: string) => {
-      const newQuery = query.trim();
-      if (newQuery !== searchQuery) {
-        setStoredQuery(newQuery);
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('page', '1');
-        params.delete('id');
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
-      }
-    },
-    [searchQuery, searchParams, pathname, router, setStoredQuery]
-  );
-
-  const onError = useCallback(() => {
-    setShouldCrash(true);
-  }, []);
-
-  const onPageChange = useCallback(
-    (page: number) => {
-      router.push(pathname + '?' + createQueryString('page', String(page)), {
-        scroll: false,
-      });
-    },
-    [createQueryString, pathname, router]
-  );
-
-  const onCardClick = useCallback(
-    (id: number) => {
-      router.push(pathname + '?' + createQueryString('id', String(id)), {
-        scroll: false,
-      });
-    },
-    [pathname, createQueryString, router]
-  );
-
-  const onCardClose = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('id');
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [pathname, router, searchParams]);
-
-  const onMainPanelClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const clickedCard = (e.target as HTMLElement).closest('.card');
-      const clickedPagination = (e.target as HTMLElement).closest(
-        '.pagination'
-      );
-
-      if (!clickedCard && !clickedPagination) {
-        onCardClose();
-      }
-    },
-    [onCardClose]
-  );
-
-  const onRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({
-      queryKey: ['characters', currentPage, searchQuery],
-    });
-  }, [queryClient, currentPage, searchQuery]);
-
-  if (shouldCrash) {
-    throw new Error(t('crashed'));
   }
+
+  let selectedCharacter = null;
+  if (characterId) {
+    try {
+      selectedCharacter = await getSingleCharacter(characterId);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  const closeParams = new URLSearchParams();
+  if (searchQuery) closeParams.set('query', searchQuery);
+  closeParams.set('page', String(currentPage));
+  const closeUrl = `/?${closeParams.toString()}`;
 
   return (
     <>
       <h1>{t('app_name')}</h1>
 
-      <TopControls onSearch={onSearch} initialValue={searchQuery} />
-      <Button className="primary-button" onClick={onRefresh}>
-        {isFetching ? t('process') : t('refresh')}
-      </Button>
+      <TopControls initialValue={searchQuery} />
 
       <div className="content-columns">
-        <div className="main-column" onClick={onMainPanelClick}>
-          {isError && (
-            <ErrorMessage className="error-message">
-              {error.message}
-            </ErrorMessage>
-          )}
-          {isFetching && <Spinner />}
-          {isSuccess && !isFetching && (
-            <ResultsGrid
-              searchResults={charactersData?.results}
-              onCardClick={onCardClick}
-            />
-          )}
-          {isSuccess && !isFetching && (
+        <div className="main-column">
+          {errorLoading && <div className="error-message">{errorLoading}</div>}
+
+          <Suspense fallback={<Spinner />}>
+            {charactersData?.results && (
+              <ResultsGrid
+                searchResults={charactersData.results}
+                currentPage={currentPage}
+                searchQuery={searchQuery}
+              />
+            )}
+          </Suspense>
+
+          {charactersData?.info && (
             <Pagination
-              infoData={charactersData?.info}
-              onPageChange={onPageChange}
+              infoData={charactersData.info}
               currentPage={currentPage}
+              searchParams={searchParams}
             />
           )}
         </div>
 
         <div className="details-panel-shell">
-          {characterId ? (
+          {selectedCharacter ? (
             <CharacterDetails
-              characterId={characterId}
-              onCardClose={onCardClose}
+              character={selectedCharacter}
+              closeUrl={closeUrl}
             />
           ) : (
             <div className="details-empty-placeholder" />
           )}
         </div>
+
+        <FlyoutPanel />
+        <ErrorButton />
       </div>
-
-      <FlyoutPanel />
-
-      <Button className="error-button" onClick={onError}>
-        !
-      </Button>
     </>
   );
 };

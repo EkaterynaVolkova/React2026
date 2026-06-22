@@ -5,6 +5,19 @@ import { useGlobalStore } from '../../stores/useGlobalStore';
 import { Character } from '@/types/shared/types';
 import { NextIntlClientProvider } from 'next-intl';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock('@/i18n/routing', () => ({
+  Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+}));
+
 const mockMessages = {
   csv: {
     number: 'Number of Selected Items',

@@ -3,6 +3,25 @@ import { TopControls } from './TopControls';
 import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock('@/i18n/routing', () => ({
+  redirect: vi.fn(),
+  Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => '/',
+}));
+
+vi.mock('@/actions', () => ({
+  handleSearchAction: vi.fn(),
+}));
+
 const mockMessages = {
   controls: {
     search: 'Search',
@@ -12,7 +31,7 @@ const mockMessages = {
 const renderComponent = () => {
   return render(
     <NextIntlClientProvider locale="en" messages={mockMessages}>
-      <TopControls onSearch={vi.fn()} />
+      <TopControls />
     </NextIntlClientProvider>
   );
 };

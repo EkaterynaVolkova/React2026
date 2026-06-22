@@ -1,26 +1,29 @@
-import { CharacterDetails } from './CharacterDetails';
 import { render, screen } from '@testing-library/react';
+import { CharacterDetails } from './CharacterDetails';
 import searchResultsJSON from '../../test-utils/fixtures/searchResults.json';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useCharacterQuery } from '../../hooks/useCharacterQuery';
 import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
+import { vi } from 'vitest';
+import { Character } from '@/types/shared/types';
 
-vi.mock('react-router', async () => {
-  const actual = await vi.importActual('react-router');
-  return {
-    ...actual,
-    useOutletContext: vi.fn(),
-  };
-});
+const mockRefresh = vi.fn();
 
-vi.mock('../../hooks/useCharacterQuery', () => ({
-  useCharacterQuery: vi.fn(),
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    refresh: mockRefresh,
+  }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
 }));
 
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false } },
-});
+vi.mock('@/i18n/routing', () => ({
+  useRouter: () => ({
+    refresh: mockRefresh,
+  }),
+  Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+}));
 
 const mockMessages = {
   character: {
@@ -33,110 +36,48 @@ const mockMessages = {
   },
 };
 
-const renderComponent = (characterId?: number) => {
-  const mockCharacter = searchResultsJSON.results[0];
+const mockCharacter = searchResultsJSON.results[0];
+
+const renderComponent = (characterProp: Character = mockCharacter) => {
   return render(
-    <QueryClientProvider client={queryClient}>
-      <NextIntlClientProvider locale="en" messages={mockMessages}>
-        <CharacterDetails
-          characterId={characterId ?? mockCharacter.id}
-          onCardClose={vi.fn()}
-        />
-      </NextIntlClientProvider>
-    </QueryClientProvider>
+    <NextIntlClientProvider locale="en" messages={mockMessages}>
+      <CharacterDetails character={characterProp} closeUrl="/?page=1" />
+    </NextIntlClientProvider>
   );
 };
 
 describe('CharacterDetails Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.restoreAllMocks();
-
-    vi.mocked(useCharacterQuery).mockReturnValue({
-      data: undefined,
-      error: null,
-      isFetching: false,
-      isSuccess: false,
-      isError: false,
-    } as ReturnType<typeof useCharacterQuery>);
   });
 
-  it('Render null if empty', () => {
-    const { container } = renderComponent(0);
-    expect(container.firstChild).toBeNull();
-  });
-
-  it('Displays the character card successfully', async () => {
-    const mockCharacter = searchResultsJSON.results[0];
-    vi.mocked(useCharacterQuery).mockReturnValue({
-      data: mockCharacter,
-      error: null,
-      isFetching: false,
-      isSuccess: true,
-      isError: false,
-    } as ReturnType<typeof useCharacterQuery>);
-
+  it('Displays the character card successfully with correct data', async () => {
     renderComponent();
 
-    expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
-    expect(await screen.findByText(/Alive/i)).toBeInTheDocument();
-    expect(await screen.findByText(/Human/i)).toBeInTheDocument();
+    expect(screen.getByText('Rick Sanchez')).toBeInTheDocument();
+    expect(screen.getByText(/Alive/i)).toBeInTheDocument();
+    expect(screen.getByText(/Human/i)).toBeInTheDocument();
+    expect(screen.getByText(/Male/i)).toBeInTheDocument();
 
     const img = screen.getByRole('img', { name: 'Rick Sanchez' });
     expect(img).toHaveAttribute('src', mockCharacter.image);
   });
 
-  it('Displays a Spinner while fetching', () => {
-    vi.mocked(useCharacterQuery).mockReturnValue({
-      data: undefined,
-      error: null,
-      isFetching: true,
-      isSuccess: false,
-      isError: false,
-    } as ReturnType<typeof useCharacterQuery>);
-
-    renderComponent();
-
-    expect(screen.getByTestId('spinner')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Refreshing...' })
-    ).toBeInTheDocument();
-  });
-
-  it('Displays error message on failure', () => {
-    vi.mocked(useCharacterQuery).mockReturnValue({
-      data: undefined,
-      error: new Error('Too many requests'),
-      isFetching: false,
-      isSuccess: false,
-      isError: true,
-    } as ReturnType<typeof useCharacterQuery>);
-
-    renderComponent();
-
-    expect(screen.getByText('Too many requests')).toBeInTheDocument();
-  });
-
-  it('Triggers query invalidation on Refresh button click', async () => {
-    const mockCharacter = searchResultsJSON.results[0];
+  it('Triggers router refresh on Refresh button click', async () => {
     const user = userEvent.setup();
-    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
-
-    vi.mocked(useCharacterQuery).mockReturnValue({
-      data: mockCharacter,
-      error: null,
-      isFetching: false,
-      isSuccess: true,
-      isError: false,
-    } as ReturnType<typeof useCharacterQuery>);
-
     renderComponent();
 
     const refreshButton = screen.getByRole('button', { name: 'Refresh' });
     await user.click(refreshButton);
 
-    expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: ['character', mockCharacter.id],
-    });
+    expect(mockRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('Renders close link with correct href', () => {
+    renderComponent();
+
+    const closeLink = screen.getByRole('link', { name: 'Close' });
+    expect(closeLink).toBeInTheDocument();
+    expect(closeLink).toHaveAttribute('href', '/?page=1');
   });
 });

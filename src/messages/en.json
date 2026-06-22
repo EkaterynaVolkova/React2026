@@ -1,0 +1,51 @@
+{
+  "common": {
+    "app_name": "Rick and Morty"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About"
+  },
+  "about": {
+    "title": "About",
+    "subtitle": "Author Info",
+    "role_name": "Developer",
+    "role_title": "Frontend Developer",
+    "role": "Role",
+    "role_initials": "Ekaterina Volkova",
+    "desc": "Built as part of the education program",
+    "course": "RS School React Course"
+  },
+  "character": {
+    "status_label": "Status",
+    "species_label": "Species",
+    "gender_label": "Gender",
+    "close": "Close",
+    "process": "Refreshing...",
+    "refresh": "Refresh"
+  },
+  "csv": {
+    "number": "Number of Selected Items",
+    "unselect": "Unselect all",
+    "download": "Download"
+  },
+  "search": {
+    "app_name": "Rick and Morty",
+    "crashed": "I crashed",
+    "process": "Refreshing...",
+    "refresh": "Refresh"
+  },
+  "controls": {
+    "search": "Search"
+  },
+  "error": {
+    "header": "Something went wrong. Try refreshing the page",
+    "placeholder": "An unexpected error occurred",
+    "reload": "Reload"
+  },
+  "not_found": {
+    "title": "Page Not Found",
+    "description": "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable",
+    "go_home": "Back to Home"
+  }
+}

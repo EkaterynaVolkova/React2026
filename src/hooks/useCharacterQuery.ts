@@ -1,4 +1,4 @@
-import { getSingleCharacter } from '@api/data.service';
+import { getSingleCharacter } from '@/api/data.service';
 import { useQuery } from '@tanstack/react-query';
 
 export const useCharacterQuery = (id: number) => {

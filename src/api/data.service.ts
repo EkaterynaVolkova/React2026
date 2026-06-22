@@ -1,4 +1,4 @@
-import type { Character, ResponseData } from '@interfaces/shared/types';
+import { Character, ResponseData } from '@/types/shared/types';
 import { BASE_API_URL } from '../constants/api';
 
 const API_RATE_LIMIT_ERROR =

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import searchResultsJSON from '../../test-utils/fixtures/searchResults.json';
-import type { Character } from '@interfaces/shared/types';
 import { ResultsGridItem } from './ResultsGridItem';
+import { Character } from '@/types/shared/types';
 
 describe('ResultsGridItem Component Tests', () => {
   describe('Rendering Tests', () => {

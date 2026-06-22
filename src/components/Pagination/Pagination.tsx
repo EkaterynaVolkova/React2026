@@ -1,95 +1,110 @@
-import type { ResponseInfo } from '@interfaces/shared/types';
+import { ResponseInfo } from '@/types/shared/types';
+import { Link } from '@/i18n/routing';
 import './Pagination.css';
 
 interface PaginationProps {
   infoData: ResponseInfo;
-  onPageChange: (page: number) => void;
   currentPage: number;
+  searchParams: {
+    page?: string;
+    query?: string;
+    q?: string;
+    id?: string;
+  };
 }
 
 export const Pagination = (props: PaginationProps) => {
-  const { infoData, onPageChange, currentPage } = props;
+  const { infoData, currentPage, searchParams } = props;
   const totalPages = infoData.pages || 0;
 
   if (!totalPages) return null;
 
-  return (
-    <>
-      <div className="pagination">
-        {totalPages > 3 && (
-          <button
-            className="pagination__page-btn"
-            disabled={currentPage <= 1}
-            onClick={() => onPageChange(1)}
-          >
-            &laquo;
-          </button>
-        )}
+  const createPageHref = (pageNumber: number) => {
+    const params = new URLSearchParams();
+    Object.entries(searchParams).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value);
+      }
+    });
+    params.set('page', String(pageNumber));
 
-        {totalPages > 3 && (
-          <button
+    return `/?${params.toString()}`;
+  };
+
+  return (
+    <div className="pagination">
+      {totalPages > 3 &&
+        (currentPage <= 1 ? (
+          <span className="pagination__page-btn disabled">&laquo;</span>
+        ) : (
+          <Link href={createPageHref(1)} className="pagination__page-btn">
+            &laquo;
+          </Link>
+        ))}
+
+      {totalPages > 3 &&
+        (currentPage <= 1 ? (
+          <span className="pagination__page-btn disabled">&lsaquo;</span>
+        ) : (
+          <Link
+            href={createPageHref(currentPage - 1)}
             className="pagination__page-btn"
-            disabled={currentPage <= 1}
-            onClick={() => onPageChange(currentPage - 1)}
           >
             &lsaquo;
-          </button>
-        )}
+          </Link>
+        ))}
 
-        {totalPages > 3 && currentPage > 2 && (
-          <button className="pagination__page-btn" disabled>
-            ...
-          </button>
-        )}
+      {totalPages > 3 && currentPage > 2 && (
+        <span className="pagination__page-btn disabled">...</span>
+      )}
 
-        {currentPage > 1 && (
-          <button
+      {currentPage > 1 && (
+        <Link
+          href={createPageHref(currentPage - 1)}
+          className="pagination__page-btn"
+        >
+          {currentPage - 1}
+        </Link>
+      )}
+
+      <span className="pagination__page-btn--active">{currentPage}</span>
+
+      {currentPage + 1 <= totalPages && (
+        <Link
+          href={createPageHref(currentPage + 1)}
+          className="pagination__page-btn"
+        >
+          {currentPage + 1}
+        </Link>
+      )}
+
+      {totalPages > 3 && currentPage < totalPages - 1 && (
+        <span className="pagination__page-btn disabled">...</span>
+      )}
+
+      {totalPages > 3 &&
+        (currentPage >= totalPages ? (
+          <span className="pagination__page-btn disabled">&rsaquo;</span>
+        ) : (
+          <Link
+            href={createPageHref(currentPage + 1)}
             className="pagination__page-btn"
-            onClick={() => onPageChange(currentPage - 1)}
-          >
-            {currentPage - 1}
-          </button>
-        )}
-
-        <button className="pagination__page-btn--active" disabled>
-          {currentPage}
-        </button>
-
-        {currentPage + 1 <= totalPages && (
-          <button
-            className="pagination__page-btn"
-            onClick={() => onPageChange(currentPage + 1)}
-          >
-            {currentPage + 1}
-          </button>
-        )}
-
-        {totalPages > 3 && currentPage < totalPages - 1 && (
-          <button className="pagination__page-btn" disabled>
-            ...
-          </button>
-        )}
-
-        {totalPages > 3 && (
-          <button
-            className="pagination__page-btn"
-            disabled={currentPage >= totalPages}
-            onClick={() => onPageChange(currentPage + 1)}
           >
             &rsaquo;
-          </button>
-        )}
+          </Link>
+        ))}
 
-        {totalPages > 3 && (
-          <button
+      {totalPages > 3 &&
+        (currentPage >= totalPages ? (
+          <span className="pagination__page-btn disabled">&raquo;</span>
+        ) : (
+          <Link
+            href={createPageHref(totalPages)}
             className="pagination__page-btn"
-            disabled={currentPage >= totalPages}
-            onClick={() => onPageChange(totalPages)}
           >
             &raquo;
-          </button>
-        )}
-      </div>
-    </>
+          </Link>
+        ))}
+    </div>
   );
 };

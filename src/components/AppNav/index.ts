@@ -1,1 +1,1 @@
-export { AppNav } from './AppNav';
+export { default } from './AppNav';

@@ -1,72 +1,69 @@
-import { Button } from '@components/Button';
+'use client';
+
+import { Button } from '@/components/Button';
 import './FlyoutPanel.css';
-import { useRef, useState } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { resetItems, useSelectionItems } from '../../stores/useGlobalStore';
+import { useTranslations } from 'next-intl';
+import { compileCsv } from '@/app/actions';
 
 export const FlyoutPanel = () => {
-  const [downloadUrl, setDownloadUrl] = useState('');
   const linkEl = useRef<HTMLAnchorElement>(null);
   const selectedItems = useSelectionItems();
+  const t = useTranslations('csv');
 
   const count = useSelectionItems().length;
   const isVisible = count > 0;
 
-  const handleDownload = () => {
-    if (selectedItems.length === 0) return;
+  const [csvContent, formAction] = useActionState(compileCsv, null);
 
-    const csvHeader = ['ID', 'Name', 'Gender', 'Species', 'Status'];
+  useEffect(() => {
+    if (csvContent) {
+      const blob = new Blob(['\uFEFF' + csvContent], {
+        type: 'text/csv;charset=utf-8;',
+      });
+      const url = URL.createObjectURL(blob);
 
-    const csvRows = selectedItems.map((item) => [
-      item.id,
-      `"${item.name}"`,
-      `"${item.gender}"`,
-      `"${item.species}"`,
-      `"${item.status}"`,
-    ]);
-
-    const csvContent = [csvHeader, ...csvRows]
-      .map((row) => row.join(';'))
-      .join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = URL.createObjectURL(blob);
-    setDownloadUrl(link);
-    setTimeout(() => {
       if (linkEl.current) {
+        linkEl.current.href = url;
         linkEl.current.click();
-        URL.revokeObjectURL(link);
-        setDownloadUrl('');
+        URL.revokeObjectURL(url);
       }
-    }, 0);
-  };
+    }
+  }, [csvContent]);
 
   if (!isVisible) return null;
 
   return (
-    <div
+    <form
+      action={formAction}
       className={`control-panel-container ${isVisible ? 'sticky' : 'hidden'}`}
     >
       <div className="control-panel container">
         <div className="counter">
-          Number of Selected Items: <span>{count}</span>
+          {t('number')}: <span>{count}</span>
         </div>
         <div className="controls">
           <Button className="primary-button" onClick={resetItems}>
-            Unselect all
+            {t('unselect')}
           </Button>
-          <Button className="primary-button" onClick={handleDownload}>
-            Download
-          </Button>
+
+          <Button className="primary-button">{t('download')}</Button>
+          <input
+            type="hidden"
+            name="selectedItems"
+            value={JSON.stringify(selectedItems)}
+          />
           <a
             ref={linkEl}
             data-testid="csv-download-link"
             download={`${count}_items.csv`}
-            href={downloadUrl}
             style={{ display: 'none' }}
           >
-            Download
+            {t('download')}
           </a>
         </div>
       </div>
-    </div>
+    </form>
   );
 };

@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
-import type { Character } from '@interfaces/shared/types';
 import {
   createSelectionSlice,
   type SelectionSlice,
 } from './slices/selectionSlice';
+import { Character } from '@/types/shared/types';
 
 export type StoreState = SelectionSlice;
 

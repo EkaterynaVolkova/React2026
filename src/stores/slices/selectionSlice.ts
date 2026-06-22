@@ -1,4 +1,4 @@
-import type { Character } from '@interfaces/shared/types';
+import { Character } from '@/types/shared/types';
 import { type StateCreator } from 'zustand';
 
 interface SelectionSliceState {
@@ -30,7 +30,9 @@ export const createSelectionSlice: StateCreator<
   toggleItem: (item) => {
     set(
       (state) => {
-        const index = state.selectedItems.findIndex((el) => el.id === item.id);
+        const slice = state as SelectionSlice;
+
+        const index = slice.selectedItems.findIndex((el) => el.id === item.id);
         if (index !== -1) {
           state.selectedItems.splice(index, 1);
         } else {

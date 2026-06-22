@@ -1,5 +1,6 @@
 import { Character } from '@/types/shared/types';
 import { toggleItem, useSelectionItems } from '../../stores/useGlobalStore';
+import Image from 'next/image';
 
 interface ResultsGridItemProps {
   item: Character;
@@ -40,7 +41,14 @@ export const ResultsGridItem = (props: ResultsGridItemProps) => {
         onChange={onCheckboxChange}
         checked={isChecked}
       ></input>
-      <img src={item.image} alt={item.name} className="card-image" />
+      <Image
+        src={item.image}
+        alt={item.name}
+        className="card-image"
+        style={{ position: 'relative' }}
+        width={200}
+        height={200}
+      />
       <div className="card-content">
         <h3 className="card-title">{item.name}</h3>
         <p className="card-desc">

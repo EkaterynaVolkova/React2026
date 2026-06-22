@@ -4,6 +4,7 @@ import searchResultsJSON from '../../test-utils/fixtures/searchResults.json';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useCharacterQuery } from '../../hooks/useCharacterQuery';
 import userEvent from '@testing-library/user-event';
+import { NextIntlClientProvider } from 'next-intl';
 
 vi.mock('react-router', async () => {
   const actual = await vi.importActual('react-router');
@@ -21,14 +22,27 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
 });
 
+const mockMessages = {
+  character: {
+    status_label: 'Status',
+    species_label: 'Species',
+    gender_label: 'Gender',
+    close: 'Close',
+    process: 'Refreshing...',
+    refresh: 'Refresh',
+  },
+};
+
 const renderComponent = (characterId?: number) => {
   const mockCharacter = searchResultsJSON.results[0];
   return render(
     <QueryClientProvider client={queryClient}>
-      <CharacterDetails
-        characterId={characterId ?? mockCharacter.id}
-        onCardClose={vi.fn()}
-      />
+      <NextIntlClientProvider locale="en" messages={mockMessages}>
+        <CharacterDetails
+          characterId={characterId ?? mockCharacter.id}
+          onCardClose={vi.fn()}
+        />
+      </NextIntlClientProvider>
     </QueryClientProvider>
   );
 };

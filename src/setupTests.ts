@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import React from 'react';
 
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
@@ -24,3 +25,18 @@ Object.defineProperty(window, 'localStorage', {
   writable: true,
   configurable: true,
 });
+
+vi.mock('next/image', () => ({
+  __esModule: true,
+  default: (
+    props: React.ImgHTMLAttributes<HTMLImageElement> & {
+      src?: string;
+      fill?: boolean;
+      priority?: boolean;
+      sizes?: string;
+    }
+  ) => {
+    const { fill, src, alt, priority, sizes, ...rest } = props;
+    return React.createElement('img', { src, alt, ...rest });
+  },
+}));

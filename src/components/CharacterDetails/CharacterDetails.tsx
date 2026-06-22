@@ -11,6 +11,8 @@ import { useCharacterQuery } from '@/hooks/useCharacterQuery';
 import { useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 
+import Image from 'next/image';
+
 type CharacterDetailsProps = {
   characterId: number;
   onCardClose: () => void;
@@ -60,10 +62,13 @@ export const CharacterDetails = ({
 
       {showContent && (
         <div className="details-card">
-          <img
+          <Image
             src={character.image}
             alt={character.name}
             className="details-image"
+            style={{ position: 'relative' }}
+            width={500}
+            height={500}
           />
           <div className="details-content">
             <h3>{character.name}</h3>

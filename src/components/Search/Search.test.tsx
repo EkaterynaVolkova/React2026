@@ -8,6 +8,7 @@ import userEvent from '@testing-library/user-event';
 import { getCharacters } from '@/api/data.service';
 import searchResultsJSON from '../../test-utils/fixtures/searchResults.json';
 import mockRouter from 'next-router-mock';
+import { NextIntlClientProvider } from 'next-intl';
 
 vi.mock('@/api/data.service', () => ({
   getCharacters: vi.fn(),
@@ -32,10 +33,34 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
 });
 
+const mockMessages = {
+  csv: {
+    number: 'Number of Selected Items',
+    unselect: 'Unselect all',
+    download: 'Download',
+  },
+  search: {
+    app_name: 'Rick and Morty',
+    crashed: 'I crashed',
+    process: 'Refreshing...',
+    refresh: 'Refresh',
+  },
+  controls: {
+    search: 'Search',
+  },
+  error: {
+    header: 'Something went wrong. Try refreshing the page',
+    placeholder: 'An unexpected error occurred',
+    reload: 'Reload',
+  },
+};
+
 const renderComponent = () => {
   return render(
     <QueryClientProvider client={queryClient}>
-      <Search />
+      <NextIntlClientProvider locale="en" messages={mockMessages}>
+        <Search />
+      </NextIntlClientProvider>
     </QueryClientProvider>
   );
 };

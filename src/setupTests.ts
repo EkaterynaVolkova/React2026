@@ -28,15 +28,8 @@ Object.defineProperty(window, 'localStorage', {
 
 vi.mock('next/image', () => ({
   __esModule: true,
-  default: (
-    props: React.ImgHTMLAttributes<HTMLImageElement> & {
-      src?: string;
-      fill?: boolean;
-      priority?: boolean;
-      sizes?: string;
-    }
-  ) => {
-    const { fill, src, alt, priority, sizes, ...rest } = props;
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+    const { src, alt, ...rest } = props;
     return React.createElement('img', { src, alt, ...rest });
   },
 }));

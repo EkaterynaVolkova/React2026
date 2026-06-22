@@ -160,13 +160,19 @@ export const Search = () => {
             />
           )}
         </div>
-        {characterId && (
-          <CharacterDetails
-            characterId={characterId}
-            onCardClose={onCardClose}
-          />
-        )}
+
+        <div className="details-panel-shell">
+          {characterId ? (
+            <CharacterDetails
+              characterId={characterId}
+              onCardClose={onCardClose}
+            />
+          ) : (
+            <div className="details-empty-placeholder" />
+          )}
+        </div>
       </div>
+
       <FlyoutPanel />
 
       <Button className="error-button" onClick={onError}>
